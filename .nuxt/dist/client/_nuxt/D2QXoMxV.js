@@ -1,0 +1,1 @@
+import{A as e}from"./CequvffD.js";import{_ as s,e as r,b as t,g as a,r as n}from"./DNceRrK-.js";const c={class:"page"},i={__name:"junior",setup(p){return(_,o)=>(n(),r("div",c,[o[0]||(o[0]=t("h2",null,"Junior School Application",-1)),a(e,{schoolType:"Junior"})]))}},u=s(i,[["__scopeId","data-v-687b52e4"]]);export{u as default};

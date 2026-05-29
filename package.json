@@ -1,0 +1,14 @@
+{
+  "name": "school-application-form",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npx nuxi dev",
+    "build": "npx nuxi build",
+    "start": "npx nuxi start"
+  },
+  "dependencies": {
+    "jspdf": "^4.2.1",
+    "nuxt": "^3.7.4"
+  }
+}
