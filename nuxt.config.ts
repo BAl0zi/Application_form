@@ -4,9 +4,13 @@ export default defineNuxtConfig({
   experimental: {
     viteEnvironmentApi: true
   },
+  css: ['~/assets/css/global.css'],
   app: {
     head: {
-      title: 'School Application Form'
+      title: 'School Application Form',
+      meta: [
+        { name: 'viewport', content: 'width=device-width, initial-scale=1, maximum-scale=1' }
+      ]
     }
   }
 })

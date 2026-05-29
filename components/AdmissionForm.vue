@@ -1,5 +1,5 @@
 <template>
-  <div class="form-shell">
+  <div :class="['form-shell', themeClass]">
     <div class="form-panel">
       <div class="form-sidebar">
         <img src="/logo.svg" alt="School Logo" class="school-logo" />
@@ -192,9 +192,10 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { jsPDF } from 'jspdf'
 const props = defineProps({ schoolType: { type: String, default: 'Primary' } })
+const themeClass = computed(() => props.schoolType === 'Junior' ? 'junior-theme' : 'primary-theme')
 const form = reactive({
   schoolType: props.schoolType,
   childName: '',
@@ -341,11 +342,16 @@ async function submit(){
 </script>
 
 <style scoped>
-.form-shell{min-height:100vh;padding:40px 24px;background:linear-gradient(180deg,#fff6eb 0%,#fff 55%,#fff5eb 100%);display:flex;justify-content:center;align-items:flex-start;font-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;color:#2f2619}
+.form-shell{min-height:100vh;width:100%;padding:40px 24px;background:linear-gradient(180deg,#fff6eb 0%,#fff 55%,#fff5eb 100%);display:flex;justify-content:center;align-items:flex-start;font-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;color:#2f2619;box-sizing:border-box;overflow-x:hidden}
+.form-shell.primary-theme{background:linear-gradient(180deg,#fff6eb 0%,#fff 55%,#fff5eb 100%)}
+.form-shell.junior-theme{background:linear-gradient(180deg,#f7eef4 0%,#e7ecff 55%,#f3e5f1 100%)}
 .form-panel{max-width:1240px;width:100%;display:grid;grid-template-columns:420px 1fr;gap:32px}
-.form-sidebar{background:linear-gradient(180deg,#ff9a20 0%,#ffb571 100%);border-radius:36px;padding:32px 28px;display:flex;flex-direction:column;gap:24px;box-shadow:0 40px 90px rgba(255,133,0,.12)}
+.form-sidebar{background:linear-gradient(180deg,#ff9a20 0%,#ffb571 100%);border-radius:36px;padding:32px 28px;display:flex;flex-direction:column;gap:24px;box-shadow:0 40px 90px rgba(255,133,0,.12);min-width:0}
+.form-shell.junior-theme .form-sidebar{background:linear-gradient(180deg,#6f243c 0%,#8d4b6f 100%);box-shadow:0 40px 90px rgba(111,36,60,.16)}
 .school-logo{width:68px;height:68px;border-radius:18px;background:rgba(255,255,255,.22);padding:14px;}
+.form-shell.junior-theme .school-logo{background:rgba(255,255,255,.18);}
 .sidebar-copy{color:#fff}
+.form-shell.junior-theme .sidebar-copy{color:#f9f0fb}
 .eyebrow{margin:0 0 12px;font-size:.9rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;opacity:.95}
 .form-sidebar h1{margin:0 0 16px;font-size:2.4rem;line-height:1.05}
 .form-sidebar p{margin:0;font-size:1rem;line-height:1.8;opacity:.95}
@@ -353,28 +359,42 @@ async function submit(){
 .progress-card p{margin:0;color:rgba(255,255,255,.92);font-size:.95rem;line-height:1.6}
 .step{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;background:rgba(255,255,255,.28)}
 .step.active{background:#fff;color:#ff6e00;box-shadow:0 18px 30px rgba(255,133,0,.24)}
-.form-card{background:#fff;border-radius:36px;padding:32px 34px 28px;box-shadow:0 40px 90px rgba(97,55,12,.08);border:1px solid rgba(255,154,0,.16)}
+.form-card{background:#fff;border-radius:36px;padding:32px 34px 28px;box-shadow:0 40px 90px rgba(97,55,12,.08);border:1px solid rgba(255,154,0,.16);overflow:hidden}
 .form-header{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin-bottom:28px}
 .form-title{margin:0 0 6px;font-size:1rem;font-weight:700;color:#ff7c00}
 .form-header h2{margin:0;font-size:2rem;color:#231b11;line-height:1.1;max-width:640px}
+.form-shell.junior-theme .form-title{color:#e6bbc8}
+.form-shell.junior-theme .form-header h2{color:#3f2232}
 .photo-btn{border:none;display:inline-flex;align-items:center;gap:10px;padding:14px 18px;border-radius:18px;background:rgba(255,133,0,.12);color:#ff6d04;font-weight:700;cursor:pointer;transition:background .2s ease}
 .photo-btn span{display:inline-flex;width:28px;height:28px;border-radius:50%;align-items:center;justify-content:center;background:#fff;color:#ff6d04;font-size:1.1rem}
+.form-shell.junior-theme .photo-btn{background:rgba(255,255,255,.18);color:#ffd4e6}
 form{display:flex;flex-direction:column;gap:24px}
 section{border:1px solid #fde2c2;padding:26px;border-radius:24px;background:rgba(255,242,228,.95)}
+.form-shell.junior-theme section{border-color:#d5bac7;background:rgba(243,225,235,.92)}
 section h3{margin:0 0 18px;font-size:1.05rem;color:#603913}
-.row-group{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.form-shell.junior-theme section h3{color:#5f2641}
+.row-group{display:grid;grid-template-columns:1fr 1fr;gap:20px;min-width:0}
 .row{display:flex;flex-direction:column}
 label{font-weight:700;margin-bottom:10px;color:#5e4b35}
+.form-shell.junior-theme label{color:#5e3b4c}
 input,textarea,select{padding:14px 16px;border:1px solid #f5d2ab;border-radius:16px;font-size:1rem;font-family:inherit;background:#fff;outline:none;transition:border-color .2s ease,box-shadow .2s ease}
+.form-shell.junior-theme input, .form-shell.junior-theme textarea, .form-shell.junior-theme select{background:#fff7fb}
 input:focus,textarea:focus,select:focus{border-color:#ff9d39;box-shadow:0 0 0 4px rgba(255,154,0,.14)}
+.form-shell.junior-theme input:focus,.form-shell.junior-theme textarea:focus,.form-shell.junior-theme select:focus{border-color:#7a1d3b;box-shadow:0 0 0 4px rgba(82,36,58,.16)}
 textarea{min-height:110px;resize:vertical}
 .actions{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:16px;margin-top:8px}
-button{padding:14px 22px;border:none;border-radius:18px;font-weight:700;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease}
+button{padding:14px 22px;border:none;border-radius:18px;font-weight:700;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease;min-width:140px}
 button[type='submit']{background:#ff7c00;color:#fff;box-shadow:0 18px 32px rgba(255,124,0,.25)}
 button[type='submit']:hover{transform:translateY(-1px)}
+.form-shell.junior-theme button[type='submit']{background:#7a1a2c;box-shadow:0 18px 32px rgba(103,30,44,.25)}
+.form-shell.junior-theme button[type='submit']:hover{transform:translateY(-1px)}
 .download-btn{background:#3f5d99;color:#fff;}
 .download-btn:hover{background:#334e85}
+.form-shell.junior-theme .download-btn{background:#4f7cac}
+.form-shell.junior-theme .download-btn:hover{background:#3f6b96}
 .status{margin-top:10px;color:#1f5d28;font-weight:700}
+.form-shell.junior-theme .status{color:#5f2845}
 @media (max-width: 1080px){.form-panel{grid-template-columns:1fr}.form-shell{padding:32px 16px}.form-header{flex-direction:column;align-items:flex-start}} 
-@media (max-width: 760px){.row-group{grid-template-columns:1fr}.form-sidebar{padding:24px}.form-card{padding:24px}.form-shell{padding:20px 16px}}
+@media (max-width: 760px){.row-group{grid-template-columns:1fr}.form-sidebar{padding:24px}.form-card{padding:24px}.form-shell{padding:20px 16px}} 
+@media (max-width: 560px){.form-shell{padding:16px 12px}.form-card{padding:20px}.form-header h2{font-size:1.6rem}.progress-card{padding:18px}.sidebar-copy p{font-size:.95rem}.actions{justify-content:center}button{width:100%;min-width:0}.photo-btn{width:100%;justify-content:center}.row-group{gap:14px}}
 </style>

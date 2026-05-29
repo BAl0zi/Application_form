@@ -22,7 +22,7 @@
 </script>
 
 <style scoped>
-.home-shell{min-height:100vh;background:linear-gradient(180deg,#fff6eb 0%,#fff 45%,#ffefd8 100%);display:flex;align-items:center;justify-content:center;padding:40px;font-family:system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif}
+.home-shell{min-height:100vh;width:100%;background:linear-gradient(180deg,#fff6eb 0%,#fff 45%,#ffefd8 100%);display:flex;align-items:center;justify-content:center;padding:40px;box-sizing:border-box}
 .hero-panel{max-width:1100px;width:100%;display:grid;grid-template-columns:1.2fr 0.8fr;gap:32px;align-items:center}
 .hero-copy{padding:40px;background:rgba(255,255,255,.92);border-radius:32px;box-shadow:0 40px 80px rgba(0,0,0,.08);}
 .hero-logo{width:72px;height:72px;margin-bottom:24px}
@@ -35,5 +35,6 @@
 .btn{padding:16px 22px;border-radius:999px;font-weight:700;background:#ff8500;color:#fff;text-decoration:none;box-shadow:0 18px 38px rgba(255,133,0,.2);transition:transform .2s ease,box-shadow .2s ease}
 .btn:hover{transform:translateY(-1px);box-shadow:0 22px 48px rgba(255,133,0,.3)}
 .btn.secondary{background:#ffbc6a;color:#2b1f0f}
-@media (max-width: 860px){.hero-panel{grid-template-columns:1fr}.hero-panel{padding:0}.hero-card{margin-top:24px}}
+@media (max-width: 860px){.home-shell{padding:32px 16px}.hero-panel{grid-template-columns:1fr}.hero-card{margin-top:24px}}
+@media (max-width: 560px){.hero-copy{padding:28px}.hero-card{padding:24px}.hero-card h2{font-size:1.4rem}.btn{width:100%;justify-content:center}}
 </style>
