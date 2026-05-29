@@ -3,8 +3,8 @@
     <div class="hero-panel">
       <div class="hero-copy">
         <img src="/logo.svg" alt="School Logo" class="hero-logo" />
-        <h1>School Admission Portal</h1>
-        <p>Start your application for primary or junior school with a modern, easy-to-use form.</p>
+        <h1>Urafiki Carovana School Admission Form</h1>
+        <p>Join Us and let us build the Kingdom of God together</p>
       </div>
       <div class="hero-card">
         <p class="hero-card-label">Apply now</p>
