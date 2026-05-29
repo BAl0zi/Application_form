@@ -192,8 +192,9 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, watch } from 'vue'
 import { jsPDF } from 'jspdf'
+const emit = defineEmits(['dirty-change'])
 const props = defineProps({ schoolType: { type: String, default: 'Primary' } })
 const themeClass = computed(() => props.schoolType === 'Junior' ? 'junior-theme' : 'primary-theme')
 const form = reactive({
@@ -225,6 +226,16 @@ const form = reactive({
 })
 const status = ref('')
 const lastSubmitted = ref(null)
+const isDirty = computed(() => {
+  return Object.keys(form).some((key) => {
+    if (key === 'schoolType') return false
+    return String(form[key]).trim() !== ''
+  })
+})
+
+watch(isDirty, (value) => {
+  emit('dirty-change', value)
+}, { immediate: true })
 
 function resetForm() {
   for (const key of Object.keys(form)) {
