@@ -8,6 +8,7 @@
     "start": "npx nuxi start"
   },
   "dependencies": {
+    "googleapis": "^173.0.0",
     "jspdf": "^4.2.1",
     "nuxt": "^3.7.4"
   }

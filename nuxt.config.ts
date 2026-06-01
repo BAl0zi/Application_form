@@ -4,6 +4,10 @@ export default defineNuxtConfig({
   experimental: {
     viteEnvironmentApi: true
   },
+  runtimeConfig: {
+    googleDriveFolderId: process.env.GOOGLE_DRIVE_FOLDER_ID || '',
+    googleServiceAccountKey: process.env.GOOGLE_SERVICE_ACCOUNT_KEY || ''
+  },
   css: ['~/assets/css/global.css'],
   app: {
     head: {

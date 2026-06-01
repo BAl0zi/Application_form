@@ -11,6 +11,7 @@
         </button>
         <NuxtLink to="/" class="home-btn">Back to Home</NuxtLink>
       </div>
+      <p v-if="uploadMessage" class="notice">{{ uploadMessage }}</p>
       <p v-if="!application" class="notice">
         No submission data is available. Please return to the form and submit again.
       </p>
@@ -24,6 +25,7 @@ import { jsPDF } from 'jspdf'
 
 const application = ref(null)
 const loading = ref(false)
+const uploadMessage = ref('')
 
 onMounted(() => {
   const stored = localStorage.getItem('submittedApplicationData')
@@ -39,7 +41,7 @@ function getApplicationFilename(payload) {
   return `application-${schoolType}-${firstName}-${surname}.pdf`
 }
 
-function downloadDocument() {
+async function downloadDocument() {
   if (!application.value) return
   loading.value = true
 
@@ -48,6 +50,7 @@ function downloadDocument() {
   const margin = 40
   let cursorY = 50
 
+  uploadMessage.value = ''
   doc.setFontSize(16)
   doc.text('School Admission Application', margin, cursorY)
   cursorY += 28
@@ -199,8 +202,32 @@ function downloadDocument() {
     }
   })
 
-  doc.save(getApplicationFilename(payload))
+  const fileName = getApplicationFilename(payload)
+  const dataUri = doc.output('datauristring')
+  const base64Data = dataUri.split(',')[1]
+  const driveResponse = await uploadPdfToDrive(fileName, base64Data, 'application/pdf')
+
+  if (driveResponse.success) {
+    uploadMessage.value = 'Saved to Google Drive successfully.'
+  } else {
+    uploadMessage.value = `Google Drive upload failed: ${driveResponse.message}`
+  }
+
+  doc.save(fileName)
   loading.value = false
+}
+
+async function uploadPdfToDrive(fileName, base64Data, mimeType) {
+  try {
+    const response = await fetch('/api/drive-upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fileName, fileData: base64Data, mimeType })
+    })
+    return await response.json()
+  } catch (error) {
+    return { success: false, message: error?.message || 'Upload request failed.' }
+  }
 }
 </script>
 
