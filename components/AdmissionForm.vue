@@ -352,8 +352,10 @@
 
 <script setup>
 import { ref, reactive, computed, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { jsPDF } from 'jspdf'
 const emit = defineEmits(['dirty-change'])
+const router = useRouter()
 const props = defineProps({ schoolType: { type: String, default: 'Primary' } })
 const themeClass = computed(() => props.schoolType === 'Junior' ? 'junior-theme' : 'primary-theme')
 const today = new Date().toISOString().slice(0, 10)
@@ -426,8 +428,15 @@ const attachmentNames = reactive({
   transferLetter: '',
   assessmentDocument: ''
 })
+const attachmentFiles = reactive({
+  birthCertificate: null,
+  academicReport: null,
+  transferLetter: null,
+  assessmentDocument: null
+})
 const initialFormState = JSON.parse(JSON.stringify(form))
 const initialAttachmentNames = JSON.parse(JSON.stringify(attachmentNames))
+const initialAttachmentFiles = JSON.parse(JSON.stringify(attachmentFiles))
 const isDirty = computed(() => {
   const changedField = Object.keys(form).some((key) => {
     if (key === 'schoolType') return false
@@ -444,7 +453,9 @@ const isDirty = computed(() => {
   })
 
   const changedAttachments = Object.keys(attachmentNames).some((key) => {
-    return String(attachmentNames[key]).trim() !== String(initialAttachmentNames[key] ?? '').trim()
+    const nameChanged = String(attachmentNames[key]).trim() !== String(initialAttachmentNames[key] ?? '').trim()
+    const fileChanged = String(attachmentFiles[key]?.data ?? '').trim() !== String(initialAttachmentFiles[key]?.data ?? '').trim()
+    return nameChanged || fileChanged
   })
 
   return changedField || Boolean(photoPreview.value) || changedAttachments
@@ -475,6 +486,7 @@ function resetForm() {
   }
   Object.keys(attachmentNames).forEach((key) => {
     attachmentNames[key] = ''
+    attachmentFiles[key] = null
   })
 }
 
@@ -506,7 +518,16 @@ function selectAttachment(field) {
 function handleAttachmentUpload(event, field) {
   const file = event.target.files?.[0]
   if (!file) return
-  attachmentNames[field] = file.name
+  const reader = new FileReader()
+  reader.onload = () => {
+    attachmentNames[field] = file.name
+    attachmentFiles[field] = {
+      name: file.name,
+      type: file.type,
+      data: String(reader.result)
+    }
+  }
+  reader.readAsDataURL(file)
 }
 
 function addSibling() {
@@ -663,26 +684,63 @@ function downloadForm() {
     cursorY += 10
   }
 
-  const attachments = [
-    ['Copy of Birth Certificate', payload.attachmentNames?.birthCertificate],
-    ['Latest Academic Report', payload.attachmentNames?.academicReport],
-    ['Clearance / Transfer Letter', payload.attachmentNames?.transferLetter],
-    ['NEMIS/KNEC or KAPSEA Document', payload.attachmentNames?.assessmentDocument]
-  ]
-
+  doc.addPage()
+  cursorY = 50
   doc.setFont('helvetica', 'bold')
   doc.text('Attachments', margin, cursorY)
-  cursorY += 18
+  cursorY += 22
   doc.setFont('helvetica', 'normal')
-  attachments.forEach(([label, value]) => {
-    const text = `${label}: ${value || 'Not attached'}`
-    const splitText = doc.splitTextToSize(text, 520)
-    doc.text(splitText, margin, cursorY)
-    cursorY += splitText.length * 14
+
+  const attachments = [
+    { key: 'birthCertificate', label: 'Copy of Birth Certificate' },
+    { key: 'academicReport', label: 'Latest Academic Report' },
+    { key: 'transferLetter', label: 'Clearance / Transfer Letter' },
+    { key: 'assessmentDocument', label: 'NEMIS/KNEC or KAPSEA Document' }
+  ]
+
+  attachments.forEach(({ key, label }) => {
+    const fileInfo = payload.attachmentFiles?.[key]
+    const fileName = payload.attachmentNames?.[key] || 'Not attached'
+    doc.setFont('helvetica', 'bold')
+    doc.text(label, margin, cursorY)
+    cursorY += 18
+    doc.setFont('helvetica', 'normal')
+    doc.text(`File: ${fileName}`, margin, cursorY)
+    cursorY += 18
+
+    if (fileInfo?.data && fileInfo.type?.startsWith('image/')) {
+      try {
+        const imageFormat = fileInfo.type.includes('png') ? 'PNG' : 'JPEG'
+        const imageWidth = 450
+        const imageHeight = 300
+        if (cursorY + imageHeight > 760) {
+          doc.addPage()
+          cursorY = 50
+        }
+        doc.addImage(fileInfo.data, imageFormat, margin, cursorY, imageWidth, imageHeight)
+        cursorY += imageHeight + 14
+      } catch (error) {
+        const note = 'Unable to embed image. Please see the attached file separately.'
+        const splitNote = doc.splitTextToSize(note, 520)
+        doc.text(splitNote, margin, cursorY)
+        cursorY += splitNote.length * 14
+      }
+    } else if (fileInfo?.data) {
+      const note = 'File content attached separately as an official document.'
+      const splitNote = doc.splitTextToSize(note, 520)
+      doc.text(splitNote, margin, cursorY)
+      cursorY += splitNote.length * 14
+    } else {
+      const note = 'No attachment uploaded.'
+      doc.text(note, margin, cursorY)
+      cursorY += 14
+    }
+
     if (cursorY > 760) {
       doc.addPage()
       cursorY = 50
     }
+    cursorY += 10
   })
   cursorY += 10
 
@@ -724,13 +782,16 @@ async function submit(){
     })
     const data = await res.json()
     if(data.success){
-      status.value = 'Application submitted successfully. You can download the filled form as PDF below.'
-      lastSubmitted.value = {
+      const payload = {
         ...JSON.parse(JSON.stringify(form)),
         photoPreview: photoPreview.value,
-        attachmentNames: JSON.parse(JSON.stringify(attachmentNames))
+        attachmentNames: JSON.parse(JSON.stringify(attachmentNames)),
+        attachmentFiles: JSON.parse(JSON.stringify(attachmentFiles))
       }
+      localStorage.setItem('submittedApplicationData', JSON.stringify(payload))
+      status.value = 'Application submitted successfully. Redirecting to confirmation page...'
       resetForm()
+      router.push('/submitted')
     } else {
       status.value = data.message || 'Submission failed.'
     }
