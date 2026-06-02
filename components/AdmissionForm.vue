@@ -523,17 +523,20 @@ async function downloadForm() {
     ['School Type', payload.schoolType || 'N/A']
   ]
 
-  const drawKeyValueRow = (label, value) => {
+  const drawKeyValueRow = (label, value, options = {}) => {
     const labelX = margin
     const valueX = margin + 160
     const lineHeight = 16
     const availableWidth = contentWidth - 160
-    const wrappedValue = doc.splitTextToSize(value, availableWidth)
+    const displayValue = options.leaveBlank ? String(value || '').trim() : (value || 'N/A')
+    const wrappedValue = displayValue ? doc.splitTextToSize(displayValue, availableWidth) : []
 
     doc.setFont('helvetica', 'bold')
     doc.text(`${label}:`, labelX, cursorY)
-    doc.setFont('helvetica', 'normal')
-    doc.text(wrappedValue, valueX, cursorY)
+    if (wrappedValue.length) {
+      doc.setFont('helvetica', 'normal')
+      doc.text(wrappedValue, valueX, cursorY)
+    }
 
     const rows = Math.max(1, wrappedValue.length)
     cursorY += rows * lineHeight + 8
@@ -560,6 +563,22 @@ async function downloadForm() {
 
     values.forEach(([label, value]) => {
       drawKeyValueRow(label, value || 'N/A')
+    })
+    cursorY += 6
+  }
+
+  const appendBlankSection = (title, values) => {
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(14)
+    doc.text(title, margin, cursorY)
+    cursorY += 18
+    doc.setLineWidth(0.4)
+    doc.line(margin, cursorY - 6, margin + 120, cursorY - 6)
+    cursorY += 8
+    doc.setFontSize(11)
+
+    values.forEach((label) => {
+      drawKeyValueRow(label, '', { leaveBlank: true })
     })
     cursorY += 6
   }
@@ -633,6 +652,11 @@ async function downloadForm() {
     ['Application Date', payload.applicationDate]
   ])
 
+  appendBlankSection('10. Custody Information', [
+    'Any custody issue the school should be aware of?',
+    'If yes, explain the area'
+  ])
+
   if (cursorY + 100 > 760) {
     doc.addPage()
     cursorY = 50
@@ -645,12 +669,12 @@ async function downloadForm() {
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(11)
   const officialUse = [
-    ['Application Received on', '___________________________'],
-    ['Reference Number', '___________________________'],
-    ['Admission Number', '___________________________']
+    ['Application Received on', ''],
+    ['Reference Number', ''],
+    ['Admission Number', '']
   ]
   officialUse.forEach(([label, value]) => {
-    drawKeyValueRow(label, value)
+    drawKeyValueRow(label, value, { leaveBlank: true })
   })
 
   const fileName = `application-${payload.schoolType.toLowerCase()}-${payload.firstName.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'form'}-${payload.surname.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'student'}.pdf`

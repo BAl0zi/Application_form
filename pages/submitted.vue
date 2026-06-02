@@ -144,7 +144,7 @@ async function downloadDesignedRegistrationDocument() {
       cursorY = 54
     }
 
-    function drawField(label, fieldValue, x, y, width) {
+    function drawField(label, fieldValue, x, y, width, options = {}) {
       doc.setTextColor(0, 0, 0)
       doc.setFont('helvetica', 'normal')
       doc.setFontSize(9)
@@ -156,12 +156,15 @@ async function downloadDesignedRegistrationDocument() {
       doc.line(lineX, y + 2, x + width, y + 2)
       doc.setFont('helvetica', 'bold')
       doc.setFontSize(9)
-      doc.text(value(fieldValue), lineX + 4, y - 1, { maxWidth: Math.max(24, x + width - lineX - 8) })
+      const displayValue = options.leaveBlank ? String(fieldValue || '').trim() : value(fieldValue)
+      if (displayValue) {
+        doc.text(displayValue, lineX + 4, y - 1, { maxWidth: Math.max(24, x + width - lineX - 8) })
+      }
     }
 
     function drawFieldRow(fields) {
       ensureSpace(24)
-      fields.forEach((field) => drawField(field.label, field.value, field.x, cursorY, field.width))
+      fields.forEach((field) => drawField(field.label, field.value, field.x, cursorY, field.width, field))
       cursorY += 22
     }
 
@@ -225,16 +228,16 @@ async function downloadDesignedRegistrationDocument() {
       doc.text('FOR OFFICE USE', pageWidth / 2, cursorY, { align: 'center' })
       cursorY += 24
       drawFieldRow([
-        { label: 'Application Received on', value: '', x: margin, width: 220 },
-        { label: 'Reference No.', value: '', x: margin + 250, width: contentWidth - 250 }
+        { label: 'Application Received on', value: '', x: margin, width: 220, leaveBlank: true },
+        { label: 'Reference No.', value: '', x: margin + 250, width: contentWidth - 250, leaveBlank: true }
       ])
       drawFieldRow([
-        { label: 'Admission No.', value: '', x: margin, width: 220 },
-        { label: 'Class / Grade', value: '', x: margin + 250, width: contentWidth - 250 }
+        { label: 'Admission No.', value: '', x: margin, width: 220, leaveBlank: true },
+        { label: 'Class / Grade', value: '', x: margin + 250, width: contentWidth - 250, leaveBlank: true }
       ])
       drawFieldRow([
-        { label: 'Assessment Date', value: '', x: margin, width: 220 },
-        { label: 'Approved By', value: '', x: margin + 250, width: contentWidth - 250 }
+        { label: 'Assessment Date', value: '', x: margin, width: 220, leaveBlank: true },
+        { label: 'Approved By', value: '', x: margin + 250, width: contentWidth - 250, leaveBlank: true }
       ])
     }
 
@@ -306,8 +309,14 @@ async function downloadDesignedRegistrationDocument() {
       { label: 'Date', value: payload.applicationDate, x: margin + 290, width: contentWidth - 290 }
     ])
     drawFieldRow([
-      { label: 'Parent Signature', value: payload.verificationSignature || payload.parentSignature, x: margin, width: 260 },
-      { label: 'School Principal', value: '', x: margin + 290, width: contentWidth - 290 }
+      { label: 'Parent Signature', value: payload.verificationSignature || payload.parentSignature, x: margin, width: 260 }
+    ])
+    drawSectionTitle('Custody Information')
+    drawFieldRow([
+      { label: 'Any custody issue the school should be aware of?', value: '', x: margin, width: contentWidth, leaveBlank: true }
+    ])
+    drawFieldRow([
+      { label: 'If yes, explain the area', value: '', x: margin, width: contentWidth, leaveBlank: true }
     ])
     drawSectionTitle('Required Documents Checklist')
     ;[
@@ -424,6 +433,14 @@ async function downloadDocument() {
         ['Signature', payload.verificationSignature],
         ['Date of Application', payload.applicationDate]
       ]
+    },
+    {
+      title: 'Custody Information',
+      values: [
+        ['Any custody issue the school should be aware of?', ''],
+        ['If yes, explain the area', '']
+      ],
+      leaveBlank: true
     }
   ]
 
@@ -436,7 +453,7 @@ async function downloadDocument() {
     doc.setFont('helvetica', 'normal')
 
     section.values.forEach(([label, value]) => {
-      const text = `${label}: ${value || 'N/A'}`
+      const text = section.leaveBlank ? `${label}:` : `${label}: ${value || 'N/A'}`
       const splitText = doc.splitTextToSize(text, 520)
       doc.text(splitText, margin, cursorY)
       cursorY += splitText.length * 14
