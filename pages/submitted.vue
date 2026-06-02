@@ -138,7 +138,305 @@ function getApplicationFilename(payload) {
   return `application-${schoolType}-${firstName}-${surname}.pdf`
 }
 
+async function downloadDesignedRegistrationDocument() {
+  if (!application.value) return
+  loading.value = true
+  uploadMessage.value = ''
+
+  try {
+    const payload = application.value
+    const doc = new jsPDF({ unit: 'pt', format: 'a4' })
+    const pageWidth = 595
+    const pageHeight = 842
+    const margin = 52
+    const contentWidth = pageWidth - margin * 2
+    const green = [111, 190, 67]
+    const dark = [48, 48, 50]
+    const line = [98, 98, 98]
+    let cursorY = 172
+    const value = (text) => String(text || '').trim() || 'N/A'
+    const fullName = [payload.firstName, payload.middleName, payload.surname].filter(Boolean).join(' ')
+
+    async function addLogo() {
+      try {
+        const response = await fetch('/logo.svg')
+        const svgText = await response.text()
+        const svgBlob = new Blob([svgText], { type: 'image/svg+xml' })
+        const svgUrl = URL.createObjectURL(svgBlob)
+        const img = new Image()
+        await new Promise((resolve) => {
+          img.onload = resolve
+          img.src = svgUrl
+        })
+
+        const canvas = document.createElement('canvas')
+        canvas.width = 140
+        canvas.height = 140
+        const ctx = canvas.getContext('2d')
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, 140, 140)
+          doc.addImage(canvas.toDataURL('image/png'), 'PNG', margin, 58, 66, 66)
+        }
+        URL.revokeObjectURL(svgUrl)
+      } catch (error) {
+        doc.setDrawColor(...green)
+        doc.setLineWidth(2)
+        doc.circle(margin + 33, 91, 26)
+        doc.setFont('helvetica', 'bold')
+        doc.setFontSize(24)
+        doc.setTextColor(...green)
+        doc.text('U', margin + 33, 100, { align: 'center' })
+        doc.setTextColor(0, 0, 0)
+      }
+    }
+
+    async function drawHeader() {
+      doc.setFillColor(...green)
+      doc.rect(0, 0, pageWidth, 34, 'F')
+      doc.rect(0, pageHeight - 28, pageWidth, 28, 'F')
+      doc.setFillColor(...dark)
+      doc.triangle(238, 34, 265, 8, pageWidth, 8, 'F')
+      doc.rect(265, 8, pageWidth - 265, 26, 'F')
+      doc.setDrawColor(180, 180, 180)
+      doc.setLineWidth(0.4)
+      doc.rect(16, 16, pageWidth - 32, pageHeight - 32)
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(22)
+      doc.setTextColor(0, 0, 0)
+      doc.text('REGISTRATION FORM', pageWidth / 2, 144, { align: 'center' })
+      doc.setFontSize(13)
+      doc.text('URAFIKI CAROVANA SCHOOL', margin + 88, 92)
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(8)
+      doc.text(`${value(payload.schoolType).toUpperCase()} SCHOOL ADMISSION`, margin + 88, 105)
+      doc.setDrawColor(160, 160, 160)
+      doc.setLineDashPattern([2, 2], 0)
+      doc.rect(pageWidth - 138, 66, 72, 88)
+      doc.setLineDashPattern([], 0)
+      doc.setFontSize(8)
+      doc.text('PHOTO', pageWidth - 102, 114, { align: 'center' })
+
+      if (payload.photoPreview) {
+        try {
+          const mimeType = payload.photoPreview.split(';')[0].split(':')[1] || 'image/jpeg'
+          const imageFormat = mimeType.includes('png') ? 'PNG' : 'JPEG'
+          doc.addImage(payload.photoPreview, imageFormat, pageWidth - 136, 68, 68, 84)
+        } catch (error) {
+          // Keep the photo box when jsPDF cannot render the selected image.
+        }
+      }
+
+      await addLogo()
+    }
+
+    function ensureSpace(height) {
+      if (cursorY + height <= pageHeight - 58) return
+      doc.addPage()
+      cursorY = 54
+    }
+
+    function drawField(label, fieldValue, x, y, width) {
+      doc.setTextColor(0, 0, 0)
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(9)
+      doc.text(`${label}:`, x, y)
+      const labelWidth = doc.getTextWidth(`${label}: `)
+      const lineX = x + labelWidth + 2
+      doc.setDrawColor(...line)
+      doc.setLineWidth(0.55)
+      doc.line(lineX, y + 2, x + width, y + 2)
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(9)
+      doc.text(value(fieldValue), lineX + 4, y - 1, { maxWidth: Math.max(24, x + width - lineX - 8) })
+    }
+
+    function drawFieldRow(fields) {
+      ensureSpace(24)
+      fields.forEach((field) => drawField(field.label, field.value, field.x, cursorY, field.width))
+      cursorY += 22
+    }
+
+    function drawSectionTitle(title) {
+      ensureSpace(36)
+      cursorY += 4
+      doc.setFillColor(...green)
+      doc.rect(margin, cursorY - 13, contentWidth, 18, 'F')
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(10)
+      doc.setTextColor(255, 255, 255)
+      doc.text(title.toUpperCase(), pageWidth / 2, cursorY, { align: 'center' })
+      doc.setTextColor(0, 0, 0)
+      cursorY += 22
+    }
+
+    function drawParagraph(label, text, minHeight = 44) {
+      ensureSpace(minHeight + 28)
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(9)
+      doc.text(`${label}:`, margin, cursorY)
+      cursorY += 12
+      const lines = doc.splitTextToSize(value(text), contentWidth - 12).slice(0, 5)
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(8.5)
+      doc.text(lines, margin + 6, cursorY)
+      const boxHeight = Math.max(minHeight, lines.length * 11 + 12)
+      doc.setDrawColor(...line)
+      doc.rect(margin, cursorY - 10, contentWidth, boxHeight)
+      cursorY += boxHeight + 14
+    }
+
+    function drawList(title, items, formatter) {
+      const filledItems = items.filter((item) => Object.values(item || {}).some((entry) => String(entry || '').trim()))
+      if (!filledItems.length) return
+      drawSectionTitle(title)
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(8.5)
+      filledItems.slice(0, 6).forEach((item, index) => {
+        ensureSpace(18)
+        doc.text(`${index + 1}.`, margin, cursorY)
+        doc.setFont('helvetica', 'normal')
+        doc.text(formatter(item), margin + 18, cursorY, { maxWidth: contentWidth - 18 })
+        doc.setDrawColor(200, 200, 200)
+        doc.line(margin, cursorY + 5, margin + contentWidth, cursorY + 5)
+        cursorY += 17
+        doc.setFont('helvetica', 'bold')
+      })
+      cursorY += 10
+    }
+
+    function drawOfficeUse() {
+      ensureSpace(150)
+      doc.setDrawColor(120, 120, 120)
+      doc.setLineDashPattern([2, 3], 0)
+      doc.line(margin, cursorY, margin + contentWidth, cursorY)
+      doc.setLineDashPattern([], 0)
+      cursorY += 24
+      doc.setFont('helvetica', 'bold')
+      doc.setFontSize(13)
+      doc.text('FOR OFFICE USE', pageWidth / 2, cursorY, { align: 'center' })
+      cursorY += 24
+      drawFieldRow([
+        { label: 'Application Received on', value: '', x: margin, width: 220 },
+        { label: 'Reference No.', value: '', x: margin + 250, width: contentWidth - 250 }
+      ])
+      drawFieldRow([
+        { label: 'Admission No.', value: '', x: margin, width: 220 },
+        { label: 'Class / Grade', value: '', x: margin + 250, width: contentWidth - 250 }
+      ])
+      drawFieldRow([
+        { label: 'Assessment Date', value: '', x: margin, width: 220 },
+        { label: 'Approved By', value: '', x: margin + 250, width: contentWidth - 250 }
+      ])
+    }
+
+    await drawHeader()
+    drawFieldRow([{ label: 'Name', value: fullName, x: margin, width: contentWidth }])
+    drawFieldRow([
+      { label: 'Date of Birth', value: payload.dob, x: margin, width: 220 },
+      { label: 'Nationality', value: payload.citizenship, x: margin + 250, width: contentWidth - 250 }
+    ])
+    drawFieldRow([
+      { label: 'Grade Applied', value: payload.gradeApplied, x: margin, width: 220 },
+      { label: 'School Type', value: payload.schoolType, x: margin + 250, width: contentWidth - 250 }
+    ])
+    drawFieldRow([{ label: 'Previous School', value: payload.previousSchool, x: margin, width: contentWidth }])
+    drawFieldRow([
+      { label: 'Gender', value: payload.gender, x: margin, width: 160 },
+      { label: 'NEMIS No.', value: payload.nemisNumber, x: margin + 180, width: 160 },
+      { label: 'Assessment No.', value: payload.assessmentNumber, x: margin + 360, width: contentWidth - 360 }
+    ])
+    drawSectionTitle('Parent / Guardian Details')
+    drawFieldRow([
+      { label: 'Name', value: payload.parentName, x: margin, width: 240 },
+      { label: 'Relationship', value: payload.parentRelationship, x: margin + 270, width: contentWidth - 270 }
+    ])
+    drawFieldRow([
+      { label: 'Profession', value: payload.profession, x: margin, width: 240 },
+      { label: 'Designation', value: payload.designation, x: margin + 270, width: contentWidth - 270 }
+    ])
+    drawFieldRow([
+      { label: 'Mobile', value: payload.mobile1, x: margin, width: 160 },
+      { label: 'Alt. Mobile', value: payload.mobile2, x: margin + 180, width: 160 },
+      { label: 'Email', value: payload.email, x: margin + 360, width: contentWidth - 360 }
+    ])
+    drawFieldRow([
+      { label: 'Company', value: payload.company, x: margin, width: 240 },
+      { label: 'Town / Country', value: `${value(payload.town)} / ${value(payload.country)}`, x: margin + 270, width: contentWidth - 270 }
+    ])
+    drawSectionTitle('Residential Address')
+    drawFieldRow([
+      { label: 'Estate / Apartment', value: payload.estateApartment, x: margin, width: 240 },
+      { label: 'Location', value: payload.location, x: margin + 270, width: contentWidth - 270 }
+    ])
+    drawFieldRow([
+      { label: 'City', value: payload.city, x: margin, width: 160 },
+      { label: 'P.O. Box', value: payload.poBox, x: margin + 180, width: 160 },
+      { label: 'County', value: payload.county, x: margin + 360, width: contentWidth - 360 }
+    ])
+    drawFieldRow([
+      { label: 'Estate', value: payload.areaEstate, x: margin, width: 160 },
+      { label: 'Road', value: payload.areaRoad, x: margin + 180, width: 160 },
+      { label: 'Plot No.', value: payload.areaPlot, x: margin + 360, width: contentWidth - 360 }
+    ])
+    drawFieldRow([
+      { label: 'Transport', value: payload.transportNeeded, x: margin, width: 180 },
+      { label: 'Pick up Point', value: payload.transportNeeded === 'Yes' ? payload.pickupPoint : 'N/A', x: margin + 210, width: contentWidth - 210 }
+    ])
+    drawSectionTitle('Medical And Application Notes')
+    drawParagraph('Relevant Medical Information', payload.medicalInfo)
+    drawParagraph('Reasons for Applying', payload.reasonsForApplying)
+    drawList('Siblings', Array.isArray(payload.siblings) ? payload.siblings : [], (sibling) => (
+      `${value(sibling.name)}    Age: ${value(sibling.age)}    Institution: ${value(sibling.institution)}`
+    ))
+    drawList('Other Children Enrolled At Urafiki Carovana School', Array.isArray(payload.enrolledChildren) ? payload.enrolledChildren : [], (child) => (
+      `${value(child.name)}    Grade: ${value(child.grade)}    Relation: ${value(child.relation)}`
+    ))
+    drawSectionTitle('Verification')
+    drawFieldRow([
+      { label: 'Parent / Guardian Name', value: payload.verificationName || payload.parentName, x: margin, width: 260 },
+      { label: 'Date', value: payload.applicationDate, x: margin + 290, width: contentWidth - 290 }
+    ])
+    drawFieldRow([
+      { label: 'Parent Signature', value: payload.verificationSignature || payload.parentSignature, x: margin, width: 260 },
+      { label: 'School Principal', value: '', x: margin + 290, width: contentWidth - 290 }
+    ])
+    drawSectionTitle('Required Documents Checklist')
+    ;[
+      ['Copy of Birth Certificate', payload.attachmentNames?.birthCertificate],
+      ['Latest Academic Report', payload.attachmentNames?.academicReport],
+      ['Clearance / Transfer Letter', payload.attachmentNames?.transferLetter],
+      ['NEMIS/KNEC or KAPSEA Document', payload.attachmentNames?.assessmentDocument]
+    ].forEach(([label, name]) => {
+      ensureSpace(18)
+      doc.rect(margin, cursorY - 9, 8, 8)
+      doc.setFont('helvetica', 'normal')
+      doc.setFontSize(8.5)
+      doc.text(`${label}: ${name || 'To be submitted physically'}`, margin + 18, cursorY)
+      cursorY += 16
+    })
+    drawOfficeUse()
+
+    const fileName = getApplicationFilename(payload)
+    const dataUri = doc.output('datauristring')
+    const base64Data = dataUri.split(',')[1]
+    const driveResponse = await uploadPdfToDrive(fileName, base64Data, 'application/pdf')
+
+    if (driveResponse.success) {
+      uploadMessage.value = 'Saved to Google Drive successfully.'
+    } else {
+      uploadMessage.value = `Google Drive upload failed: ${driveResponse.message}`
+    }
+
+    doc.save(fileName)
+  } finally {
+    loading.value = false
+  }
+}
+
 async function downloadDocument() {
+  await downloadDesignedRegistrationDocument()
+  return
+
   if (!application.value) return
   loading.value = true
 
