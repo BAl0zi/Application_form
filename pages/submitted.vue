@@ -1,121 +1,30 @@
 <template>
   <div class="submitted-shell">
     <div class="message-card">
-      <h1>✓ Application Submitted Successfully</h1>
+      <h1>Application Submitted Successfully</h1>
       <p class="success-message">
-        Your admission form has been submitted. Download your completed application document below to keep for your records.
+        Your admission form has been submitted. Download the completed application and keep it for your records.
       </p>
-      
+
       <div class="actions">
         <button type="button" class="download-btn" @click="downloadDocument" :disabled="!application || loading">
           {{ loading ? 'Preparing document...' : 'Download Application' }}
         </button>
         <NuxtLink to="/" class="home-btn">Back to Home</NuxtLink>
       </div>
+
       <p v-if="uploadMessage" class="notice">{{ uploadMessage }}</p>
       <p v-if="!application" class="notice error">
         No submission data is available. Please return to the form and submit again.
       </p>
-    </div>
 
-    <div class="instructions-container">
-      <div class="instruction-section">
-        <h2>Next Steps: Submit Required Documents</h2>
-        <p class="intro-text">Print the downloaded application and submit it to the School Office along with the following documents:</p>
-        
-        <div class="documents-list">
-          <div class="document-item">
-            <span class="icon">📷</span>
-            <div>
-              <strong>2 Passport-size Photos</strong>
-              <p>Recent passport-size photos of the learner</p>
-            </div>
-          </div>
-          <div class="document-item">
-            <span class="icon">📋</span>
-            <div>
-              <strong>Birth Certificate</strong>
-              <p>Copy of birth certificate</p>
-            </div>
-          </div>
-          <div class="document-item">
-            <span class="icon">📊</span>
-            <div>
-              <strong>Academic Report</strong>
-              <p>Latest academic report</p>
-            </div>
-          </div>
-          <div class="document-item">
-            <span class="icon">📄</span>
-            <div>
-              <strong>Transfer Letter (if applicable)</strong>
-              <p>Clearance or Transfer Letter from previous school</p>
-            </div>
-          </div>
-          <div class="document-item">
-            <span class="icon">🏆</span>
-            <div>
-              <strong>Assessment Documents</strong>
-              <p>NEMIS/KNEC Assessment Number (Grade 3-9) or KAPSEA Certificate (JSS)</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="instruction-section timeline">
-        <h2>Timeline & Communication</h2>
-        <div class="timeline-item">
-          <div class="timeline-marker">1 Week</div>
-          <div class="timeline-content">
-            <strong>Confirmation Email</strong>
-            <p>You'll receive an email confirming receipt with your Application Reference Number.</p>
-            <small>📧 If no email within 1 week, contact the school office.</small>
-          </div>
-        </div>
-
-        <div class="timeline-item">
-          <div class="timeline-marker">2 Weeks</div>
-          <div class="timeline-content">
-            <strong>Application Outcome & Assessment Date</strong>
-            <p>Receive email with application outcome and scheduled assessment date.</p>
-          </div>
-        </div>
-
-        <div class="timeline-item">
-          <div class="timeline-marker">7 Days</div>
-          <div class="timeline-content">
-            <strong>Pay Assessment Fee</strong>
-            <p>Complete payment to secure your assessment slot. Failure to pay will result in application cancellation.</p>
-          </div>
-        </div>
-
-        <div class="timeline-item">
-          <div class="timeline-marker">Post Assessment</div>
-          <div class="timeline-content">
-            <strong>Final Steps for Successful Candidates</strong>
-            <p>Pay Admission & Commitment Fee within 14 days to complete registration. Then receive your Admission Number and instructions to pick up admission documents.</p>
-          </div>
-        </div>
-      </div>
-
-      <div class="instruction-section deadline">
-        <h2>⏰ Application Deadline</h2>
-        <p class="deadline-text">Complete applications must be submitted by <strong>Wednesday, 1st October 2026</strong></p>
-      </div>
-
-      <div class="instruction-section important-notes">
-        <h2>Important Notes</h2>
-        <div class="note-item">
-          <strong>Note 1:</strong> The school may cancel admission for learners with outstanding fee balances from Emanuela Mazzola School or Urafiki Carovana School.
-        </div>
-        <div class="note-item">
-          <strong>Note 2:</strong> If you haven't received communication within 1 week of submitting, please follow up with the school office using the contact details provided.
-        </div>
+      <div class="brief-note">
+        <strong>Next step:</strong>
+        <span>Print the downloaded form and submit it to the school office with the required supporting documents.</span>
       </div>
     </div>
   </div>
 </template>
-
 <script setup>
 import { ref, onMounted } from 'vue'
 import { jsPDF } from 'jspdf'
@@ -635,22 +544,27 @@ async function uploadPdfToDrive(fileName, base64Data, mimeType) {
   padding: 40px 24px;
   background: linear-gradient(180deg, #fff6eb 0%, #fff 55%, #ffefd8 100%);
   box-sizing: border-box;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 .message-card {
-  max-width: 720px;
+  max-width: 640px;
   width: 100%;
   background: #fff;
-  border-radius: 32px;
+  border-radius: 24px;
   padding: 40px 36px;
   box-shadow: 0 40px 80px rgba(0, 0, 0, 0.08);
   border: 1px solid rgba(255, 154, 0, 0.16);
+  box-sizing: border-box;
 }
 
 .message-card h1 {
   margin: 0 0 18px;
-  font-size: clamp(2rem, 2.5vw, 2.8rem);
+  font-size: clamp(1.7rem, 2.5vw, 2.4rem);
   color: #231b11;
+  line-height: 1.12;
+  overflow-wrap: anywhere;
 }
 
 .message-card p {
@@ -710,6 +624,23 @@ button,
 .success-message {
   color: #1f5d28 !important;
   font-weight: 600;
+}
+
+.brief-note {
+  display: flex;
+  gap: 8px;
+  margin-top: 24px;
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(255, 245, 230, 0.9);
+  color: #5e4b35;
+  line-height: 1.6;
+  box-sizing: border-box;
+}
+
+.brief-note strong {
+  color: #231b11;
+  flex-shrink: 0;
 }
 
 .instructions-container {
@@ -1066,3 +997,4 @@ button,
 }
 
 </style>
+
