@@ -546,154 +546,195 @@ function removeEnrolledChild(index) {
   form.enrolledChildren.splice(index, 1)
 }
 
-function downloadForm() {
+async function downloadForm() {
   if (!lastSubmitted.value) return
   const payload = lastSubmitted.value
   const doc = new jsPDF({ unit: 'pt', format: 'a4' })
   const margin = 40
-  let cursorY = 50
+  const pageWidth = 595
+  const contentWidth = pageWidth - margin * 2
+  let cursorY = 30
 
-  doc.setFontSize(16)
-  doc.text('School Admission Application', margin, cursorY)
-  cursorY += 28
-
-  if (payload.photoPreview) {
-    const mimeType = payload.photoPreview.split(';')[0].split(':')[1] || 'image/jpeg'
-    const imageFormat = mimeType.includes('png') ? 'PNG' : 'JPEG'
-    doc.addImage(payload.photoPreview, imageFormat, margin, cursorY, 100, 120)
-    cursorY += 140
-  }
-
-  const sections = [
-    {
-      title: 'Section 1: Basic Details',
-      values: [
-        ['First Name', payload.firstName],
-        ['Middle Name', payload.middleName],
-        ['Surname', payload.surname],
-        ['Date of Birth', payload.dob],
-        ['School Attended Before', payload.previousSchool],
-        ['Citizenship', payload.citizenship],
-        ['Religion', payload.religion],
-        ['Denomination', payload.denomination],
-        ['Parish', payload.parish],
-        ['NEMIS Number', payload.nemisNumber],
-        ['Assessment Number', payload.assessmentNumber],
-        ['Grade Applied', payload.gradeApplied],
-        ['Gender', payload.gender]
-      ]
-    },
-    {
-      title: 'Section 2: Medical Information',
-      values: [
-        ['Relevant Medical Information', payload.medicalInfo]
-      ]
-    },
-    {
-      title: 'Section 3: Parent / Guardian Information',
-      values: [
-        ['Name', payload.parentName],
-        ['Relationship', payload.parentRelationship],
-        ['Profession', payload.profession],
-        ['Designation', payload.designation],
-        ['Company', payload.company],
-        ['Town', payload.town],
-        ['Country', payload.country],
-        ['Mobile 1', payload.mobile1],
-        ['Mobile 2', payload.mobile2],
-        ['Email Address', payload.email],
-        ['Signature', payload.parentSignature],
-        ['Signature Date', payload.parentSignatureDate],
-        ['Estate / Apartment', payload.estateApartment],
-        ['Location', payload.location],
-        ['City', payload.city],
-        ['P.O. BOX', payload.poBox],
-        ['County', payload.county],
-        ['Reasons for Applying', payload.reasonsForApplying],
-        ['Area Estate', payload.areaEstate],
-        ['Area Road', payload.areaRoad],
-        ['Area Plot', payload.areaPlot],
-        ['Transport Needed', payload.transportNeeded],
-        ['Pick up Point', payload.transportNeeded === 'Yes' ? payload.pickupPoint : 'N/A']
-      ]
-    },
-    {
-      title: 'Verification',
-      values: [
-        ['Parent/Guardian Name', payload.verificationName],
-        ['Signature', payload.verificationSignature],
-        ['Date of Application', payload.applicationDate]
-      ]
+  // Load and add school logo
+  try {
+    const response = await fetch('/logo.svg')
+    const svgText = await response.text()
+    const svgBlob = new Blob([svgText], { type: 'image/svg+xml' })
+    const svgUrl = URL.createObjectURL(svgBlob)
+    const img = new Image()
+    
+    await new Promise((resolve) => {
+      img.onload = resolve
+      img.src = svgUrl
+    })
+    
+    const canvas = document.createElement('canvas')
+    canvas.width = 200
+    canvas.height = 200
+    const ctx = canvas.getContext('2d')
+    if (ctx) {
+      ctx.drawImage(img, 0, 0, 200, 200)
+      const imgData = canvas.toDataURL('image/png')
+      doc.addImage(imgData, 'PNG', pageWidth / 2 - 40, cursorY, 80, 80)
     }
+    URL.revokeObjectURL(svgUrl)
+  } catch (e) {
+    // Logo not available, continue without it
+  }
+  
+  cursorY += 90
+
+  doc.setDrawColor(0)
+  doc.setLineWidth(0.8)
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(20)
+  doc.text('Urafiki Carovana School', margin, cursorY)
+  doc.setFontSize(12)
+  doc.setFont('helvetica', 'normal')
+  doc.text('Admission Application Form', margin, cursorY + 18)
+  doc.line(margin, cursorY + 26, margin + contentWidth, cursorY + 26)
+  cursorY += 40
+
+  const formDetails = [
+    ['Student Name', `${payload.firstName || ''} ${payload.middleName || ''} ${payload.surname || ''}`.trim() || 'N/A'],
+    ['Grade Applied', payload.gradeApplied || 'N/A'],
+    ['Date of Birth', payload.dob || 'N/A'],
+    ['Gender', payload.gender || 'N/A'],
+    ['School Type', payload.schoolType || 'N/A']
   ]
 
-  doc.setFontSize(12)
+  const drawKeyValueRow = (label, value) => {
+    const labelX = margin
+    const valueX = margin + 160
+    const lineHeight = 16
+    const availableWidth = contentWidth - 160
+    const wrappedValue = doc.splitTextToSize(value, availableWidth)
 
-  sections.forEach((section) => {
     doc.setFont('helvetica', 'bold')
-    doc.text(section.title, margin, cursorY)
+    doc.text(`${label}:`, labelX, cursorY)
+    doc.setFont('helvetica', 'normal')
+    doc.text(wrappedValue, valueX, cursorY)
+
+    const rows = Math.max(1, wrappedValue.length)
+    cursorY += rows * lineHeight + 8
+
+    if (cursorY > 760) {
+      doc.addPage()
+      cursorY = 50
+    }
+  }
+
+  formDetails.forEach(([label, value]) => drawKeyValueRow(label, value || 'N/A'))
+  cursorY += 10
+
+  const appendSection = (title, values) => {
+    doc.setFont('helvetica', 'bold')
+    doc.setFontSize(14)
+    doc.text(title, margin, cursorY)
     cursorY += 18
+    doc.setLineWidth(0.4)
+    doc.line(margin, cursorY - 6, margin + 120, cursorY - 6)
+    cursorY += 8
+    doc.setFontSize(11)
     doc.setFont('helvetica', 'normal')
 
-    section.values.forEach(([label, value]) => {
-      const text = `${label}: ${value || 'N/A'}`
-      const splitText = doc.splitTextToSize(text, 520)
-      doc.text(splitText, margin, cursorY)
-      cursorY += splitText.length * 14
-      if (cursorY > 760) {
-        doc.addPage()
-        cursorY = 50
-      }
+    values.forEach(([label, value]) => {
+      drawKeyValueRow(label, value || 'N/A')
     })
-    cursorY += 10
-  })
+    cursorY += 6
+  }
+
+  appendSection('1. Basic Details', [
+    ['School Attended Previously', payload.previousSchool],
+    ['Citizenship', payload.citizenship],
+    ['Religion', payload.religion],
+    ['Denomination', payload.denomination],
+    ['Parish', payload.parish],
+    ['NEMIS Number', payload.nemisNumber],
+    ['Assessment Number', payload.assessmentNumber]
+  ])
+
+  appendSection('2. Medical Information', [
+    ['Relevant Medical Information', payload.medicalInfo]
+  ])
+
+  appendSection('3. Parent / Guardian Information', [
+    ['Name', payload.parentName],
+    ['Relationship', payload.parentRelationship],
+    ['Profession', payload.profession],
+    ['Designation', payload.designation],
+    ['Company', payload.company],
+    ['Town', payload.town],
+    ['Country', payload.country],
+    ['Mobile 1', payload.mobile1],
+    ['Mobile 2', payload.mobile2],
+    ['Email', payload.email],
+    ['Signature', payload.parentSignature],
+    ['Signature Date', payload.parentSignatureDate]
+  ])
+
+  appendSection('4. Residential Address', [
+    ['Estate / Apartment', payload.estateApartment],
+    ['Location', payload.location],
+    ['City', payload.city],
+    ['P.O. BOX', payload.poBox],
+    ['County', payload.county],
+    ['Area Estate', payload.areaEstate],
+    ['Area Road', payload.areaRoad],
+    ['Plot Number', payload.areaPlot]
+  ])
+
+  appendSection('5. Transport', [
+    ['Transport Required', payload.transportNeeded],
+    ['Pick up Point', payload.transportNeeded === 'Yes' ? payload.pickupPoint : 'N/A']
+  ])
 
   if (Array.isArray(payload.siblings) && payload.siblings.length) {
-    doc.setFont('helvetica', 'bold')
-    doc.text('Siblings', margin, cursorY)
-    cursorY += 18
-    doc.setFont('helvetica', 'normal')
-    payload.siblings.forEach((sibling, index) => {
-      const text = `${index + 1}. ${sibling.name || 'N/A'} — Age: ${sibling.age || 'N/A'} — Institution: ${sibling.institution || 'N/A'}`
-      const splitText = doc.splitTextToSize(text, 520)
-      doc.text(splitText, margin, cursorY)
-      cursorY += splitText.length * 14
-      if (cursorY > 760) {
-        doc.addPage()
-        cursorY = 50
-      }
-    })
-    cursorY += 10
+    appendSection('6. Siblings', payload.siblings.map((sibling, index) => [
+      `${index + 1}. ${sibling.name || 'Sibling'}`,
+      `Age: ${sibling.age || 'N/A'} • Institution: ${sibling.institution || 'N/A'}`
+    ]))
   }
 
   if (Array.isArray(payload.enrolledChildren) && payload.enrolledChildren.length) {
-    doc.setFont('helvetica', 'bold')
-    doc.text('Other Children Enrolled at Urafiki Carovana School', margin, cursorY)
-    cursorY += 18
-    doc.setFont('helvetica', 'normal')
-    payload.enrolledChildren.forEach((child, index) => {
-      const text = `${index + 1}. ${child.name || 'N/A'} — Grade: ${child.grade || 'N/A'} — Relation: ${child.relation || 'N/A'}`
-      const splitText = doc.splitTextToSize(text, 520)
-      doc.text(splitText, margin, cursorY)
-      cursorY += splitText.length * 14
-      if (cursorY > 760) {
-        doc.addPage()
-        cursorY = 50
-      }
-    })
-    cursorY += 10
+    appendSection('7. Other Children Enrolled', payload.enrolledChildren.map((child, index) => [
+      `${index + 1}. ${child.name || 'Child'}`,
+      `Grade: ${child.grade || 'N/A'} • Relation: ${child.relation || 'N/A'}`
+    ]))
+  }
+
+  appendSection('8. Application Notes', [
+    ['Reasons for Applying', payload.reasonsForApplying]
+  ])
+
+  appendSection('9. Verification', [
+    ['Verified by', payload.verificationName],
+    ['Signature', payload.verificationSignature],
+    ['Application Date', payload.applicationDate]
+  ])
+
+  const drawBoxedSection = (title, rows) => {
+    const sectionTop = cursorY - 4
+    rows.forEach(([label, value]) => drawKeyValueRow(label, value || 'N/A'))
+    const sectionHeight = cursorY - sectionTop + 2
+    doc.rect(margin - 6, sectionTop - 2, contentWidth + 12, sectionHeight, 'S')
+    cursorY += 6
   }
 
   doc.addPage()
   cursorY = 50
   doc.setFont('helvetica', 'bold')
+  doc.setFontSize(14)
   doc.text('Attachments', margin, cursorY)
-  cursorY += 22
+  cursorY += 20
+  doc.setLineWidth(0.4)
+  doc.line(margin, cursorY - 6, margin + 92, cursorY - 6)
+  doc.setFontSize(11)
   doc.setFont('helvetica', 'normal')
 
   const attachments = [
-    { key: 'birthCertificate', label: 'Copy of Birth Certificate' },
-    { key: 'academicReport', label: 'Latest Academic Report' },
+    { key: 'birthCertificate', label: 'Birth Certificate' },
+    { key: 'academicReport', label: 'Academic Report' },
     { key: 'transferLetter', label: 'Clearance / Transfer Letter' },
     { key: 'assessmentDocument', label: 'NEMIS/KNEC or KAPSEA Document' }
   ]
@@ -701,68 +742,44 @@ function downloadForm() {
   attachments.forEach(({ key, label }) => {
     const fileInfo = payload.attachmentFiles?.[key]
     const fileName = payload.attachmentNames?.[key] || 'Not attached'
-    doc.setFont('helvetica', 'bold')
-    doc.text(label, margin, cursorY)
-    cursorY += 18
-    doc.setFont('helvetica', 'normal')
-    doc.text(`File: ${fileName}`, margin, cursorY)
-    cursorY += 18
-
+    drawKeyValueRow(label, fileName)
     if (fileInfo?.data && fileInfo.type?.startsWith('image/')) {
       try {
         const imageFormat = fileInfo.type.includes('png') ? 'PNG' : 'JPEG'
-        const imageWidth = 450
-        const imageHeight = 300
-        if (cursorY + imageHeight > 760) {
+        const maxImgWidth = contentWidth
+        const imgHeight = 220
+        if (cursorY + imgHeight > 760) {
           doc.addPage()
           cursorY = 50
         }
-        doc.addImage(fileInfo.data, imageFormat, margin, cursorY, imageWidth, imageHeight)
-        cursorY += imageHeight + 14
+        doc.addImage(fileInfo.data, imageFormat, margin, cursorY, maxImgWidth, imgHeight)
+        cursorY += imgHeight + 10
       } catch (error) {
-        const note = 'Unable to embed image. Please see the attached file separately.'
-        const splitNote = doc.splitTextToSize(note, 520)
-        doc.text(splitNote, margin, cursorY)
-        cursorY += splitNote.length * 14
+        drawKeyValueRow('Note', 'Image cannot be embedded; please attach the original document separately.')
       }
     } else if (fileInfo?.data) {
-      const note = 'File content attached separately as an official document.'
-      const splitNote = doc.splitTextToSize(note, 520)
-      doc.text(splitNote, margin, cursorY)
-      cursorY += splitNote.length * 14
-    } else {
-      const note = 'No attachment uploaded.'
-      doc.text(note, margin, cursorY)
-      cursorY += 14
+      drawKeyValueRow('Note', 'Document uploaded; content available separately.')
     }
-
-    if (cursorY > 760) {
-      doc.addPage()
-      cursorY = 50
-    }
-    cursorY += 10
   })
-  cursorY += 10
 
+  if (cursorY + 100 > 760) {
+    doc.addPage()
+    cursorY = 50
+  }
+
+  doc.setFont('helvetica', 'bold')
+  doc.setFontSize(13)
+  doc.text('For official use only', margin, cursorY)
+  cursorY += 18
+  doc.setFont('helvetica', 'normal')
+  doc.setFontSize(11)
   const officialUse = [
     ['Application Received on', '___________________________'],
     ['Reference Number', '___________________________'],
     ['Admission Number', '___________________________']
   ]
-
-  doc.setFont('helvetica', 'bold')
-  doc.text('For official use only', margin, cursorY)
-  cursorY += 18
-  doc.setFont('helvetica', 'normal')
   officialUse.forEach(([label, value]) => {
-    const text = `${label}: ${value}`
-    const splitText = doc.splitTextToSize(text, 520)
-    doc.text(splitText, margin, cursorY)
-    cursorY += splitText.length * 14
-    if (cursorY > 760) {
-      doc.addPage()
-      cursorY = 50
-    }
+    drawKeyValueRow(label, value)
   })
 
   const fileName = `application-${payload.schoolType.toLowerCase()}-${payload.firstName.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'form'}-${payload.surname.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'student'}.pdf`
