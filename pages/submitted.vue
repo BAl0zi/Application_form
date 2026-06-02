@@ -1,20 +1,117 @@
 <template>
   <div class="submitted-shell">
     <div class="message-card">
-      <h1>Application Submitted Successfully</h1>
-      <p>
-        Your admission form has been submitted. You can download the completed application document below.
+      <h1>✓ Application Submitted Successfully</h1>
+      <p class="success-message">
+        Your admission form has been submitted. Download your completed application document below to keep for your records.
       </p>
+      
       <div class="actions">
         <button type="button" class="download-btn" @click="downloadDocument" :disabled="!application || loading">
-          {{ loading ? 'Preparing document...' : 'Download Document' }}
+          {{ loading ? 'Preparing document...' : 'Download Application' }}
         </button>
         <NuxtLink to="/" class="home-btn">Back to Home</NuxtLink>
       </div>
       <p v-if="uploadMessage" class="notice">{{ uploadMessage }}</p>
-      <p v-if="!application" class="notice">
+      <p v-if="!application" class="notice error">
         No submission data is available. Please return to the form and submit again.
       </p>
+    </div>
+
+    <div class="instructions-container">
+      <div class="instruction-section">
+        <h2>Next Steps: Submit Required Documents</h2>
+        <p class="intro-text">Print the downloaded application and submit it to the School Office along with the following documents:</p>
+        
+        <div class="documents-list">
+          <div class="document-item">
+            <span class="icon">📷</span>
+            <div>
+              <strong>2 Passport-size Photos</strong>
+              <p>Recent passport-size photos of the learner</p>
+            </div>
+          </div>
+          <div class="document-item">
+            <span class="icon">📋</span>
+            <div>
+              <strong>Birth Certificate</strong>
+              <p>Copy of birth certificate</p>
+            </div>
+          </div>
+          <div class="document-item">
+            <span class="icon">📊</span>
+            <div>
+              <strong>Academic Report</strong>
+              <p>Latest academic report</p>
+            </div>
+          </div>
+          <div class="document-item">
+            <span class="icon">📄</span>
+            <div>
+              <strong>Transfer Letter (if applicable)</strong>
+              <p>Clearance or Transfer Letter from previous school</p>
+            </div>
+          </div>
+          <div class="document-item">
+            <span class="icon">🏆</span>
+            <div>
+              <strong>Assessment Documents</strong>
+              <p>NEMIS/KNEC Assessment Number (Grade 3-9) or KAPSEA Certificate (JSS)</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="instruction-section timeline">
+        <h2>Timeline & Communication</h2>
+        <div class="timeline-item">
+          <div class="timeline-marker">1 Week</div>
+          <div class="timeline-content">
+            <strong>Confirmation Email</strong>
+            <p>You'll receive an email confirming receipt with your Application Reference Number.</p>
+            <small>📧 If no email within 1 week, contact the school office.</small>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-marker">2 Weeks</div>
+          <div class="timeline-content">
+            <strong>Application Outcome & Assessment Date</strong>
+            <p>Receive email with application outcome and scheduled assessment date.</p>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-marker">7 Days</div>
+          <div class="timeline-content">
+            <strong>Pay Assessment Fee</strong>
+            <p>Complete payment to secure your assessment slot. Failure to pay will result in application cancellation.</p>
+          </div>
+        </div>
+
+        <div class="timeline-item">
+          <div class="timeline-marker">Post Assessment</div>
+          <div class="timeline-content">
+            <strong>Final Steps for Successful Candidates</strong>
+            <p>Pay Admission & Commitment Fee within 14 days to complete registration. Then receive your Admission Number and instructions to pick up admission documents.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="instruction-section deadline">
+        <h2>⏰ Application Deadline</h2>
+        <p class="deadline-text">Complete applications must be submitted by <strong>Wednesday, 1st October 2026</strong></p>
+      </div>
+
+      <div class="instruction-section important-notes">
+        <h2>Important Notes</h2>
+        <div class="note-item">
+          <strong>Note 1:</strong> The school may cancel admission for learners with outstanding fee balances from Emanuela Mazzola School or Urafiki Carovana School.
+        </div>
+        <div class="note-item">
+          <strong>Note 2:</strong> If you haven't received communication within 1 week of submitting, please follow up with the school office using the contact details provided.
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -222,7 +319,7 @@ async function uploadPdfToDrive(fileName, base64Data, mimeType) {
     const response = await fetch('/api/drive-upload', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fileName, fileData: base64Data, mimeType })
+      body: JSON.stringify({ fileName, fileData: base64Data, mimeType, schoolType: application.value?.schoolType })
     })
     return await response.json()
   } catch (error) {
@@ -308,6 +405,168 @@ button,
   font-weight: 700;
 }
 
+.notice.error {
+  color: #c41c3b;
+}
+
+.success-message {
+  color: #1f5d28 !important;
+  font-weight: 600;
+}
+
+.instructions-container {
+  max-width: 1200px;
+  margin: 60px auto;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+  padding: 0 24px;
+}
+
+.instruction-section {
+  background: #fff;
+  border-radius: 24px;
+  padding: 32px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(255, 154, 0, 0.12);
+}
+
+.instruction-section h2 {
+  margin: 0 0 24px;
+  font-size: 1.6rem;
+  color: #231b11;
+  border-bottom: 3px solid #ff7c00;
+  padding-bottom: 12px;
+}
+
+.intro-text {
+  color: #5e4b35;
+  line-height: 1.8;
+  margin-bottom: 20px;
+}
+
+.documents-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.document-item {
+  display: flex;
+  gap: 16px;
+  padding: 18px;
+  background: rgba(255, 245, 230, 0.8);
+  border-radius: 16px;
+  border-left: 4px solid #ff7c00;
+}
+
+.document-item .icon {
+  font-size: 28px;
+  min-width: 40px;
+}
+
+.document-item strong {
+  color: #231b11;
+  font-size: 1.05rem;
+}
+
+.document-item p {
+  margin: 6px 0 0;
+  color: #5e4b35;
+  font-size: 0.95rem;
+}
+
+.timeline {
+  padding: 28px;
+}
+
+.timeline-item {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 28px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid rgba(255, 154, 0, 0.2);
+}
+
+.timeline-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.timeline-marker {
+  flex-shrink: 0;
+  width: 100px;
+  background: linear-gradient(135deg, #ff7c00, #ffb571);
+  color: #fff;
+  border-radius: 12px;
+  padding: 12px;
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.timeline-content strong {
+  color: #231b11;
+  font-size: 1.1rem;
+}
+
+.timeline-content p {
+  margin: 8px 0;
+  color: #5e4b35;
+  line-height: 1.6;
+}
+
+.timeline-content small {
+  display: block;
+  margin-top: 8px;
+  color: #8a6b3a;
+  font-style: italic;
+}
+
+.deadline {
+  background: linear-gradient(135deg, rgba(255, 124, 0, 0.05), rgba(255, 181, 113, 0.05));
+  border: 2px solid #ff7c00;
+}
+
+.deadline h2 {
+  color: #ff6d04;
+  border-bottom-color: #ffb571;
+}
+
+.deadline-text {
+  font-size: 1.2rem;
+  color: #231b11;
+  margin: 0;
+}
+
+.deadline-text strong {
+  color: #ff6d04;
+  font-size: 1.3rem;
+}
+
+.important-notes {
+  background: rgba(255, 107, 53, 0.04);
+  border-left: 5px solid #ff6d35;
+}
+
+.note-item {
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 12px;
+  margin-bottom: 12px;
+  color: #5e4b35;
+  line-height: 1.7;
+}
+
+.note-item:last-child {
+  margin-bottom: 0;
+}
+
+.note-item strong {
+  color: #231b11;
+}
+
 @media (max-width: 760px) {
   .message-card {
     padding: 28px 22px;
@@ -319,6 +578,35 @@ button,
 
   button,
   .home-btn {
+    width: 100%;
+  }
+
+  .instructions-container {
+    margin: 40px auto;
+    gap: 20px;
+  }
+
+  .instruction-section {
+    padding: 20px;
+  }
+
+  .instruction-section h2 {
+    font-size: 1.3rem;
+    margin-bottom: 16px;
+  }
+
+  .document-item {
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .timeline-item {
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .timeline-marker {
     width: 100%;
   }
 }

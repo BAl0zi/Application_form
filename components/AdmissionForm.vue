@@ -15,7 +15,6 @@
             <li><button type="button" @click="scrollTo('section-2')">2. Medical Info</button></li>
             <li><button type="button" @click="scrollTo('section-3')">3. Parent / Guardian</button></li>
             <li><button type="button" @click="scrollTo('section-4')">4. Verification</button></li>
-            <li><button type="button" @click="scrollTo('section-5')">5. Attachments</button></li>
           </ul>
         </nav>
       </div>
@@ -312,32 +311,6 @@
             </div>
           </section>
 
-          <section id="section-5">
-            <h3>Attachments</h3>
-            <div class="attachment-grid">
-              <div class="attachment-item">
-                <button type="button" class="attachment-btn" @click="selectAttachment('birthCertificate')">Attach Birth Certificate</button>
-                <p>{{ attachmentNames.birthCertificate || 'No file selected' }}</p>
-                <input ref="birthCertificateRef" type="file" accept="image/*,.pdf" @change="event => handleAttachmentUpload(event, 'birthCertificate')" hidden />
-              </div>
-              <div class="attachment-item">
-                <button type="button" class="attachment-btn" @click="selectAttachment('academicReport')">Attach Academic Report</button>
-                <p>{{ attachmentNames.academicReport || 'No file selected' }}</p>
-                <input ref="academicReportRef" type="file" accept="image/*,.pdf" @change="event => handleAttachmentUpload(event, 'academicReport')" hidden />
-              </div>
-              <div class="attachment-item">
-                <button type="button" class="attachment-btn" @click="selectAttachment('transferLetter')">Attach Clearance / Transfer Letter</button>
-                <p>{{ attachmentNames.transferLetter || 'No file selected' }}</p>
-                <input ref="transferLetterRef" type="file" accept="image/*,.pdf" @change="event => handleAttachmentUpload(event, 'transferLetter')" hidden />
-              </div>
-              <div class="attachment-item">
-                <button type="button" class="attachment-btn" @click="selectAttachment('assessmentDocument')">Attach NEMIS/KNEC or KAPSEA Document</button>
-                <p>{{ attachmentNames.assessmentDocument || 'No file selected' }}</p>
-                <input ref="assessmentDocumentRef" type="file" accept="image/*,.pdf" @change="event => handleAttachmentUpload(event, 'assessmentDocument')" hidden />
-              </div>
-            </div>
-          </section>
-
           <div class="actions">
             <button type="submit">Submit Application</button>
             <button type="button" v-if="lastSubmitted" @click="downloadForm" class="download-btn">Download PDF</button>
@@ -412,31 +385,7 @@ const status = ref('')
 const lastSubmitted = ref(null)
 const photoPreview = ref('')
 const photoInput = ref(null)
-const birthCertificateRef = ref(null)
-const academicReportRef = ref(null)
-const transferLetterRef = ref(null)
-const assessmentDocumentRef = ref(null)
-const attachmentRefs = {
-  birthCertificate: birthCertificateRef,
-  academicReport: academicReportRef,
-  transferLetter: transferLetterRef,
-  assessmentDocument: assessmentDocumentRef
-}
-const attachmentNames = reactive({
-  birthCertificate: '',
-  academicReport: '',
-  transferLetter: '',
-  assessmentDocument: ''
-})
-const attachmentFiles = reactive({
-  birthCertificate: null,
-  academicReport: null,
-  transferLetter: null,
-  assessmentDocument: null
-})
 const initialFormState = JSON.parse(JSON.stringify(form))
-const initialAttachmentNames = JSON.parse(JSON.stringify(attachmentNames))
-const initialAttachmentFiles = JSON.parse(JSON.stringify(attachmentFiles))
 const isDirty = computed(() => {
   const changedField = Object.keys(form).some((key) => {
     if (key === 'schoolType') return false
@@ -452,13 +401,7 @@ const isDirty = computed(() => {
     return String(current).trim() !== String(initial ?? '').trim()
   })
 
-  const changedAttachments = Object.keys(attachmentNames).some((key) => {
-    const nameChanged = String(attachmentNames[key]).trim() !== String(initialAttachmentNames[key] ?? '').trim()
-    const fileChanged = String(attachmentFiles[key]?.data ?? '').trim() !== String(initialAttachmentFiles[key]?.data ?? '').trim()
-    return nameChanged || fileChanged
-  })
-
-  return changedField || Boolean(photoPreview.value) || changedAttachments
+  return changedField || Boolean(photoPreview.value)
 })
 
 watch(isDirty, (value) => {
@@ -484,10 +427,6 @@ function resetForm() {
   if (photoInput.value) {
     photoInput.value.value = null
   }
-  Object.keys(attachmentNames).forEach((key) => {
-    attachmentNames[key] = ''
-    attachmentFiles[key] = null
-  })
 }
 
 function selectPhoto() {
@@ -507,25 +446,6 @@ function handlePhotoUpload(event) {
   const reader = new FileReader()
   reader.onload = () => {
     photoPreview.value = String(reader.result)
-  }
-  reader.readAsDataURL(file)
-}
-
-function selectAttachment(field) {
-  attachmentRefs[field]?.value?.click()
-}
-
-function handleAttachmentUpload(event, field) {
-  const file = event.target.files?.[0]
-  if (!file) return
-  const reader = new FileReader()
-  reader.onload = () => {
-    attachmentNames[field] = file.name
-    attachmentFiles[field] = {
-      name: file.name,
-      type: file.type,
-      data: String(reader.result)
-    }
   }
   reader.readAsDataURL(file)
 }
@@ -713,55 +633,6 @@ async function downloadForm() {
     ['Application Date', payload.applicationDate]
   ])
 
-  const drawBoxedSection = (title, rows) => {
-    const sectionTop = cursorY - 4
-    rows.forEach(([label, value]) => drawKeyValueRow(label, value || 'N/A'))
-    const sectionHeight = cursorY - sectionTop + 2
-    doc.rect(margin - 6, sectionTop - 2, contentWidth + 12, sectionHeight, 'S')
-    cursorY += 6
-  }
-
-  doc.addPage()
-  cursorY = 50
-  doc.setFont('helvetica', 'bold')
-  doc.setFontSize(14)
-  doc.text('Attachments', margin, cursorY)
-  cursorY += 20
-  doc.setLineWidth(0.4)
-  doc.line(margin, cursorY - 6, margin + 92, cursorY - 6)
-  doc.setFontSize(11)
-  doc.setFont('helvetica', 'normal')
-
-  const attachments = [
-    { key: 'birthCertificate', label: 'Birth Certificate' },
-    { key: 'academicReport', label: 'Academic Report' },
-    { key: 'transferLetter', label: 'Clearance / Transfer Letter' },
-    { key: 'assessmentDocument', label: 'NEMIS/KNEC or KAPSEA Document' }
-  ]
-
-  attachments.forEach(({ key, label }) => {
-    const fileInfo = payload.attachmentFiles?.[key]
-    const fileName = payload.attachmentNames?.[key] || 'Not attached'
-    drawKeyValueRow(label, fileName)
-    if (fileInfo?.data && fileInfo.type?.startsWith('image/')) {
-      try {
-        const imageFormat = fileInfo.type.includes('png') ? 'PNG' : 'JPEG'
-        const maxImgWidth = contentWidth
-        const imgHeight = 220
-        if (cursorY + imgHeight > 760) {
-          doc.addPage()
-          cursorY = 50
-        }
-        doc.addImage(fileInfo.data, imageFormat, margin, cursorY, maxImgWidth, imgHeight)
-        cursorY += imgHeight + 10
-      } catch (error) {
-        drawKeyValueRow('Note', 'Image cannot be embedded; please attach the original document separately.')
-      }
-    } else if (fileInfo?.data) {
-      drawKeyValueRow('Note', 'Document uploaded; content available separately.')
-    }
-  })
-
   if (cursorY + 100 > 760) {
     doc.addPage()
     cursorY = 50
@@ -793,17 +664,14 @@ async function submit(){
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        ...form,
-        attachmentNames: JSON.parse(JSON.stringify(attachmentNames))
+        ...form
       })
     })
     const data = await res.json()
     if(data.success){
       const payload = {
         ...JSON.parse(JSON.stringify(form)),
-        photoPreview: photoPreview.value,
-        attachmentNames: JSON.parse(JSON.stringify(attachmentNames)),
-        attachmentFiles: JSON.parse(JSON.stringify(attachmentFiles))
+        photoPreview: photoPreview.value
       }
       localStorage.setItem('submittedApplicationData', JSON.stringify(payload))
       status.value = 'Application submitted successfully. Redirecting to confirmation page...'
@@ -851,10 +719,8 @@ async function submit(){
 .photo-preview-card p{margin:0;color:#5e4b35;font-size:.95rem}
 .section-divider{height:1px;background:rgba(97,55,12,.12);border:none;margin:24px 0}
 .dynamic-row{padding:16px 0;border-bottom:1px solid rgba(97,55,12,.1)}
-.add-btn,.remove-btn,.attachment-btn{padding:12px 16px;border-radius:16px;border:none;background:#ffbc6a;color:#2b1f0f;font-weight:700;cursor:pointer;transition:background .2s ease}
-.add-btn:hover,.remove-btn:hover,.attachment-btn:hover{background:#ff9b23}
-.attachment-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.attachment-item{background:rgba(255,255,255,.95);border:1px solid #f5d2ab;border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:10px}
+.add-btn,.remove-btn{padding:12px 16px;border-radius:16px;border:none;background:#ffbc6a;color:#2b1f0f;font-weight:700;cursor:pointer;transition:background .2s ease}
+.add-btn:hover,.remove-btn:hover{background:#ff9b23}
 .section-nav{background:rgba(255,255,255,.92);border:1px solid rgba(255,255,255,.8);border-radius:24px;padding:20px}
 .nav-title{margin:0 0 12px;font-size:.95rem;font-weight:700;color:#2b1f0f;letter-spacing:.08em}
 .section-nav ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px}
