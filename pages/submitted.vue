@@ -421,6 +421,7 @@ button,
   grid-template-columns: 1fr;
   gap: 32px;
   padding: 0 24px;
+  box-sizing: border-box;
 }
 
 .instruction-section {
@@ -429,20 +430,23 @@ button,
   padding: 32px;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.06);
   border: 1px solid rgba(255, 154, 0, 0.12);
+  overflow: hidden;
 }
 
 .instruction-section h2 {
   margin: 0 0 24px;
-  font-size: 1.6rem;
+  font-size: clamp(1.2rem, 2vw, 1.6rem);
   color: #231b11;
   border-bottom: 3px solid #ff7c00;
   padding-bottom: 12px;
+  word-wrap: break-word;
 }
 
 .intro-text {
   color: #5e4b35;
   line-height: 1.8;
   margin-bottom: 20px;
+  font-size: clamp(0.9rem, 1.5vw, 1rem);
 }
 
 .documents-list {
@@ -458,22 +462,26 @@ button,
   background: rgba(255, 245, 230, 0.8);
   border-radius: 16px;
   border-left: 4px solid #ff7c00;
+  align-items: flex-start;
 }
 
 .document-item .icon {
   font-size: 28px;
   min-width: 40px;
+  flex-shrink: 0;
 }
 
 .document-item strong {
   color: #231b11;
-  font-size: 1.05rem;
+  font-size: clamp(0.95rem, 1.5vw, 1.05rem);
+  display: block;
 }
 
 .document-item p {
   margin: 6px 0 0;
   color: #5e4b35;
-  font-size: 0.95rem;
+  font-size: clamp(0.85rem, 1.2vw, 0.95rem);
+  line-height: 1.5;
 }
 
 .timeline {
@@ -503,18 +511,24 @@ button,
   padding: 12px;
   text-align: center;
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: clamp(0.75rem, 1.2vw, 0.9rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 80px;
 }
 
 .timeline-content strong {
   color: #231b11;
-  font-size: 1.1rem;
+  font-size: clamp(0.95rem, 1.5vw, 1.1rem);
+  display: block;
 }
 
 .timeline-content p {
   margin: 8px 0;
   color: #5e4b35;
   line-height: 1.6;
+  font-size: clamp(0.85rem, 1.2vw, 0.95rem);
 }
 
 .timeline-content small {
@@ -522,6 +536,7 @@ button,
   margin-top: 8px;
   color: #8a6b3a;
   font-style: italic;
+  font-size: clamp(0.75rem, 1vw, 0.85rem);
 }
 
 .deadline {
@@ -535,14 +550,14 @@ button,
 }
 
 .deadline-text {
-  font-size: 1.2rem;
+  font-size: clamp(1rem, 2vw, 1.2rem);
   color: #231b11;
   margin: 0;
 }
 
 .deadline-text strong {
   color: #ff6d04;
-  font-size: 1.3rem;
+  font-size: clamp(1rem, 2.2vw, 1.3rem);
 }
 
 .important-notes {
@@ -557,6 +572,7 @@ button,
   margin-bottom: 12px;
   color: #5e4b35;
   line-height: 1.7;
+  font-size: clamp(0.85rem, 1.2vw, 0.95rem);
 }
 
 .note-item:last-child {
@@ -584,30 +600,170 @@ button,
   .instructions-container {
     margin: 40px auto;
     gap: 20px;
+    padding: 0 16px;
+    max-width: 100%;
   }
 
   .instruction-section {
-    padding: 20px;
+    padding: 18px;
+    border-radius: 16px;
   }
 
   .instruction-section h2 {
-    font-size: 1.3rem;
+    font-size: 1.2rem;
     margin-bottom: 16px;
+    padding-bottom: 10px;
+  }
+
+  .intro-text {
+    font-size: 0.95rem;
+    margin-bottom: 16px;
+  }
+
+  .documents-list {
+    gap: 12px;
   }
 
   .document-item {
     gap: 12px;
-    padding: 14px;
+    padding: 12px;
+    flex-wrap: wrap;
+  }
+
+  .document-item .icon {
+    font-size: 24px;
+    min-width: 32px;
+  }
+
+  .document-item strong {
+    font-size: 0.95rem;
+  }
+
+  .document-item p {
+    font-size: 0.85rem;
+  }
+
+  .timeline {
+    padding: 16px;
   }
 
   .timeline-item {
     flex-direction: column;
     gap: 12px;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
+    padding-bottom: 18px;
   }
 
   .timeline-marker {
     width: 100%;
+    padding: 10px;
+    font-size: 0.85rem;
+  }
+
+  .timeline-content strong {
+    font-size: 0.95rem;
+  }
+
+  .timeline-content p {
+    font-size: 0.9rem;
+    margin: 6px 0;
+  }
+
+  .timeline-content small {
+    font-size: 0.8rem;
+  }
+
+  .deadline {
+    padding: 20px;
+  }
+
+  .deadline-text {
+    font-size: 1rem;
+  }
+
+  .deadline-text strong {
+    font-size: 1.1rem;
+  }
+
+  .important-notes {
+    padding: 16px;
+  }
+
+  .note-item {
+    padding: 12px;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+  }
+
+  .note-item strong {
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 500px) {
+  .submitted-shell {
+    padding: 20px 12px;
+  }
+
+  .message-card {
+    padding: 20px 16px;
+    border-radius: 20px;
+  }
+
+  .message-card h1 {
+    font-size: 1.5rem;
+    margin-bottom: 12px;
+  }
+
+  .message-card p {
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+  }
+
+  .instructions-container {
+    margin: 30px auto;
+    padding: 0 12px;
+    gap: 16px;
+  }
+
+  .instruction-section {
+    padding: 16px;
+    border-radius: 14px;
+  }
+
+  .instruction-section h2 {
+    font-size: 1.05rem;
+    margin-bottom: 12px;
+  }
+
+  .intro-text {
+    font-size: 0.9rem;
+  }
+
+  .document-item {
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .document-item .icon {
+    font-size: 20px;
+    min-width: 28px;
+  }
+
+  .timeline-item {
+    margin-bottom: 14px;
+  }
+
+  .timeline-marker {
+    font-size: 0.75rem;
+  }
+
+  .deadline-text {
+    font-size: 0.95rem;
+  }
+
+  .deadline-text strong {
+    font-size: 1rem;
   }
 }
 
