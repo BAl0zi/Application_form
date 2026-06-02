@@ -408,6 +408,15 @@ watch(isDirty, (value) => {
   emit('dirty-change', value)
 }, { immediate: true })
 
+watch(
+  () => form.estateApartment,
+  (newEstate, oldEstate) => {
+    if (!form.areaEstate || form.areaEstate === oldEstate) {
+      form.areaEstate = newEstate
+    }
+  }
+)
+
 function resetForm() {
   for (const key of Object.keys(form)) {
     if (key === 'schoolType') continue
