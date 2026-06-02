@@ -303,14 +303,6 @@ async function downloadDesignedRegistrationDocument() {
     drawList('Other Children Enrolled At Urafiki Carovana School', Array.isArray(payload.enrolledChildren) ? payload.enrolledChildren : [], (child) => (
       `${value(child.name)}    Grade: ${value(child.grade)}    Relation: ${value(child.relation)}`
     ))
-    drawSectionTitle('Verification')
-    drawFieldRow([
-      { label: 'Parent / Guardian Name', value: payload.verificationName || payload.parentName, x: margin, width: 260 },
-      { label: 'Date', value: payload.applicationDate, x: margin + 290, width: contentWidth - 290 }
-    ])
-    drawFieldRow([
-      { label: 'Parent Signature', value: payload.verificationSignature || payload.parentSignature, x: margin, width: 260 }
-    ])
     drawSectionTitle('Custody Information')
     drawFieldRow([
       { label: 'Any custody issue the school should be aware of?', value: payload.custodyIssue || 'No', x: margin, width: contentWidth }
@@ -320,6 +312,14 @@ async function downloadDesignedRegistrationDocument() {
         { label: 'If yes, explain the area', value: payload.custodyIssueDetails, x: margin, width: contentWidth }
       ])
     }
+    drawSectionTitle('Verification')
+    drawFieldRow([
+      { label: 'Parent / Guardian Name', value: payload.verificationName || payload.parentName, x: margin, width: 260 },
+      { label: 'Date', value: payload.applicationDate, x: margin + 290, width: contentWidth - 290 }
+    ])
+    drawFieldRow([
+      { label: 'Parent Signature', value: payload.verificationSignature || payload.parentSignature, x: margin, width: 260 }
+    ])
     drawSectionTitle('Required Documents Checklist')
     ;[
       ['Copy of Birth Certificate', payload.attachmentNames?.birthCertificate],
@@ -429,18 +429,18 @@ async function downloadDocument() {
       ]
     },
     {
+      title: 'Custody Information',
+      values: [
+        ['Any custody issue the school should be aware of?', payload.custodyIssue || 'No'],
+        ...(payload.custodyIssue === 'Yes' ? [['If yes, explain the area', payload.custodyIssueDetails]] : [])
+      ]
+    },
+    {
       title: 'Verification',
       values: [
         ['Parent/Guardian Name', payload.verificationName],
         ['Signature', payload.verificationSignature],
         ['Date of Application', payload.applicationDate]
-      ]
-    },
-    {
-      title: 'Custody Information',
-      values: [
-        ['Any custody issue the school should be aware of?', payload.custodyIssue || 'No'],
-        ...(payload.custodyIssue === 'Yes' ? [['If yes, explain the area', payload.custodyIssueDetails]] : [])
       ]
     }
   ]

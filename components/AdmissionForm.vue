@@ -292,6 +292,19 @@
           </section>
 
           <section id="section-4">
+            <h4>Custody Information</h4>
+            <div class="row">
+              <label>Any custody issue the school should be aware of?</label>
+              <div class="radio-group">
+                <label><input type="radio" value="Yes" v-model="form.custodyIssue" /> Yes</label>
+                <label><input type="radio" value="No" v-model="form.custodyIssue" /> No</label>
+              </div>
+            </div>
+            <div class="row" v-if="form.custodyIssue === 'Yes'">
+              <label>If yes, explain the area</label>
+              <textarea v-model="form.custodyIssueDetails" placeholder="Explain the custody issue the school should be aware of"></textarea>
+            </div>
+            <div class="section-divider"></div>
             <h3>Verification</h3>
             <div class="row-group">
               <div class="row">
@@ -308,19 +321,6 @@
                 <label>Date of Application</label>
                 <input type="date" v-model="form.applicationDate" readonly />
               </div>
-            </div>
-            <div class="section-divider"></div>
-            <h4>Custody Information</h4>
-            <div class="row">
-              <label>Any custody issue the school should be aware of?</label>
-              <div class="radio-group">
-                <label><input type="radio" value="Yes" v-model="form.custodyIssue" /> Yes</label>
-                <label><input type="radio" value="No" v-model="form.custodyIssue" /> No</label>
-              </div>
-            </div>
-            <div class="row" v-if="form.custodyIssue === 'Yes'">
-              <label>If yes, explain the area</label>
-              <textarea v-model="form.custodyIssueDetails" placeholder="Explain the custody issue the school should be aware of"></textarea>
             </div>
           </section>
 
@@ -670,15 +670,15 @@ async function downloadForm() {
     ['Reasons for Applying', payload.reasonsForApplying]
   ])
 
-  appendSection('9. Verification', [
+  appendSection('9. Custody Information', [
+    ['Any custody issue the school should be aware of?', payload.custodyIssue || 'No'],
+    ...(payload.custodyIssue === 'Yes' ? [['If yes, explain the area', payload.custodyIssueDetails]] : [])
+  ])
+
+  appendSection('10. Verification', [
     ['Verified by', payload.verificationName],
     ['Signature', payload.verificationSignature],
     ['Application Date', payload.applicationDate]
-  ])
-
-  appendSection('10. Custody Information', [
-    ['Any custody issue the school should be aware of?', payload.custodyIssue || 'No'],
-    ...(payload.custodyIssue === 'Yes' ? [['If yes, explain the area', payload.custodyIssueDetails]] : [])
   ])
 
   if (cursorY + 100 > 760) {
