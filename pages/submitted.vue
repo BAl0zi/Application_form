@@ -313,11 +313,13 @@ async function downloadDesignedRegistrationDocument() {
     ])
     drawSectionTitle('Custody Information')
     drawFieldRow([
-      { label: 'Any custody issue the school should be aware of?', value: '', x: margin, width: contentWidth, leaveBlank: true }
+      { label: 'Any custody issue the school should be aware of?', value: payload.custodyIssue || 'No', x: margin, width: contentWidth }
     ])
-    drawFieldRow([
-      { label: 'If yes, explain the area', value: '', x: margin, width: contentWidth, leaveBlank: true }
-    ])
+    if (payload.custodyIssue === 'Yes') {
+      drawFieldRow([
+        { label: 'If yes, explain the area', value: payload.custodyIssueDetails, x: margin, width: contentWidth }
+      ])
+    }
     drawSectionTitle('Required Documents Checklist')
     ;[
       ['Copy of Birth Certificate', payload.attachmentNames?.birthCertificate],
@@ -437,10 +439,9 @@ async function downloadDocument() {
     {
       title: 'Custody Information',
       values: [
-        ['Any custody issue the school should be aware of?', ''],
-        ['If yes, explain the area', '']
-      ],
-      leaveBlank: true
+        ['Any custody issue the school should be aware of?', payload.custodyIssue || 'No'],
+        ...(payload.custodyIssue === 'Yes' ? [['If yes, explain the area', payload.custodyIssueDetails]] : [])
+      ]
     }
   ]
 

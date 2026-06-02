@@ -309,6 +309,19 @@
                 <input type="date" v-model="form.applicationDate" readonly />
               </div>
             </div>
+            <div class="section-divider"></div>
+            <h4>Custody Information</h4>
+            <div class="row">
+              <label>Any custody issue the school should be aware of?</label>
+              <div class="radio-group">
+                <label><input type="radio" value="Yes" v-model="form.custodyIssue" /> Yes</label>
+                <label><input type="radio" value="No" v-model="form.custodyIssue" /> No</label>
+              </div>
+            </div>
+            <div class="row" v-if="form.custodyIssue === 'Yes'">
+              <label>If yes, explain the area</label>
+              <textarea v-model="form.custodyIssueDetails" placeholder="Explain the custody issue the school should be aware of"></textarea>
+            </div>
           </section>
 
           <div class="actions">
@@ -379,7 +392,9 @@ const form = reactive({
   pickupPoint: '',
   verificationName: '',
   verificationSignature: '',
-  applicationDate: today
+  applicationDate: today,
+  custodyIssue: 'No',
+  custodyIssueDetails: ''
 })
 const status = ref('')
 const lastSubmitted = ref(null)
@@ -661,9 +676,9 @@ async function downloadForm() {
     ['Application Date', payload.applicationDate]
   ])
 
-  appendBlankSection('10. Custody Information', [
-    'Any custody issue the school should be aware of?',
-    'If yes, explain the area'
+  appendSection('10. Custody Information', [
+    ['Any custody issue the school should be aware of?', payload.custodyIssue || 'No'],
+    ...(payload.custodyIssue === 'Yes' ? [['If yes, explain the area', payload.custodyIssueDetails]] : [])
   ])
 
   if (cursorY + 100 > 760) {
