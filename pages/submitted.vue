@@ -259,6 +259,73 @@ async function downloadDesignedRegistrationDocument() {
     ])
     drawSectionTitle('Parent / Guardian Details')
     drawFieldRow([
+      { label: 'Situation', value: payload.familyContactType, x: margin, width: contentWidth }
+    ])
+    if (payload.familyContactType === 'Both Parents' || payload.familyContactType === 'Single Parent') {
+      drawFieldRow([
+        { label: 'Father Name', value: payload.fatherName, x: margin, width: 240 },
+        { label: 'Father Mobile', value: payload.fatherMobile, x: margin + 270, width: contentWidth - 270 }
+      ])
+      drawFieldRow([
+        { label: 'Father Email', value: payload.fatherEmail, x: margin, width: 240 },
+        { label: 'Father Profession', value: payload.fatherProfession, x: margin + 270, width: contentWidth - 270 }
+      ])
+      drawFieldRow([
+        { label: 'Father Designation', value: payload.fatherDesignation, x: margin, width: 240 },
+        { label: 'Father Company', value: payload.fatherCompany, x: margin + 270, width: contentWidth - 270 }
+      ])
+      drawFieldRow([
+        { label: 'Father Town', value: payload.fatherTown, x: margin, width: 240 },
+        { label: 'Father Country', value: payload.fatherCountry, x: margin + 270, width: contentWidth - 270 }
+      ])
+      drawFieldRow([
+        { label: 'Father Signature', value: payload.fatherSignature, x: margin, width: contentWidth }
+      ])
+      drawFieldRow([
+        { label: 'Mother Name', value: payload.motherName, x: margin, width: 240 },
+        { label: 'Mother Mobile', value: payload.motherMobile, x: margin + 270, width: contentWidth - 270 }
+      ])
+      drawFieldRow([
+        { label: 'Mother Email', value: payload.motherEmail, x: margin, width: 240 },
+        { label: 'Mother Profession', value: payload.motherProfession, x: margin + 270, width: contentWidth - 270 }
+      ])
+      drawFieldRow([
+        { label: 'Mother Designation', value: payload.motherDesignation, x: margin, width: 240 },
+        { label: 'Mother Company', value: payload.motherCompany, x: margin + 270, width: contentWidth - 270 }
+      ])
+      drawFieldRow([
+        { label: 'Mother Town', value: payload.motherTown, x: margin, width: 240 },
+        { label: 'Mother Country', value: payload.motherCountry, x: margin + 270, width: contentWidth - 270 }
+      ])
+      drawFieldRow([
+        { label: 'Mother Signature', value: payload.motherSignature, x: margin, width: contentWidth }
+      ])
+    }
+    if (payload.familyContactType === 'Guardian') {
+      drawFieldRow([
+        { label: 'Guardian Name', value: payload.guardianName, x: margin, width: 240 },
+        { label: 'Relationship', value: payload.guardianRelationship, x: margin + 270, width: contentWidth - 270 }
+      ])
+      drawFieldRow([
+        { label: 'Guardian Mobile', value: payload.guardianMobile, x: margin, width: 240 },
+        { label: 'Guardian Email', value: payload.guardianEmail, x: margin + 270, width: contentWidth - 270 }
+      ])
+      drawFieldRow([
+        { label: 'Guardian Profession', value: payload.guardianProfession, x: margin, width: contentWidth }
+      ])
+      drawFieldRow([
+        { label: 'Guardian Designation', value: payload.guardianDesignation, x: margin, width: 240 },
+        { label: 'Guardian Company', value: payload.guardianCompany, x: margin + 270, width: contentWidth - 270 }
+      ])
+      drawFieldRow([
+        { label: 'Guardian Town', value: payload.guardianTown, x: margin, width: 240 },
+        { label: 'Guardian Country', value: payload.guardianCountry, x: margin + 270, width: contentWidth - 270 }
+      ])
+      drawFieldRow([
+        { label: 'Guardian Signature', value: payload.guardianSignature, x: margin, width: contentWidth }
+      ])
+    }
+    drawFieldRow([
       { label: 'Name', value: payload.parentName, x: margin, width: 240 },
       { label: 'Relationship', value: payload.parentRelationship, x: margin + 270, width: contentWidth - 270 }
     ])
@@ -339,10 +406,14 @@ async function downloadDesignedRegistrationDocument() {
     const fileName = getApplicationFilename(payload)
     const dataUri = doc.output('datauristring')
     const base64Data = dataUri.split(',')[1]
-    const driveResponse = await uploadPdfToDrive(fileName, base64Data, 'application/pdf')
+    const driveResponse = payload.driveUpload?.success
+      ? payload.driveUpload
+      : await uploadPdfToDrive(fileName, base64Data, 'application/pdf')
 
     if (driveResponse.success) {
-      uploadMessage.value = 'Saved to Google Drive successfully.'
+      uploadMessage.value = payload.driveUpload?.success
+        ? 'Already saved to Google Drive successfully.'
+        : 'Saved to Google Drive successfully.'
     } else {
       uploadMessage.value = `Google Drive upload failed: ${driveResponse.message}`
     }
@@ -403,6 +474,35 @@ async function downloadDocument() {
     {
       title: 'Section 3: Parent / Guardian Information',
       values: [
+        ['Parent / Guardian Situation', payload.familyContactType],
+        ['Father Name', payload.fatherName],
+        ['Father Mobile', payload.fatherMobile],
+        ['Father Email', payload.fatherEmail],
+        ['Father Profession', payload.fatherProfession],
+        ['Father Designation', payload.fatherDesignation],
+        ['Father Company', payload.fatherCompany],
+        ['Father Town', payload.fatherTown],
+        ['Father Country', payload.fatherCountry],
+        ['Father Signature', payload.fatherSignature],
+        ['Mother Name', payload.motherName],
+        ['Mother Mobile', payload.motherMobile],
+        ['Mother Email', payload.motherEmail],
+        ['Mother Profession', payload.motherProfession],
+        ['Mother Designation', payload.motherDesignation],
+        ['Mother Company', payload.motherCompany],
+        ['Mother Town', payload.motherTown],
+        ['Mother Country', payload.motherCountry],
+        ['Mother Signature', payload.motherSignature],
+        ['Guardian Name', payload.guardianName],
+        ['Guardian Relationship', payload.guardianRelationship],
+        ['Guardian Mobile', payload.guardianMobile],
+        ['Guardian Email', payload.guardianEmail],
+        ['Guardian Profession', payload.guardianProfession],
+        ['Guardian Designation', payload.guardianDesignation],
+        ['Guardian Company', payload.guardianCompany],
+        ['Guardian Town', payload.guardianTown],
+        ['Guardian Country', payload.guardianCountry],
+        ['Guardian Signature', payload.guardianSignature],
         ['Name', payload.parentName],
         ['Relationship', payload.parentRelationship],
         ['Profession', payload.profession],

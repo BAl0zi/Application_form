@@ -122,66 +122,182 @@
 
           <section id="section-3">
             <h3>Section 3: Parent / Guardian Information</h3>
-            <div class="row-group">
-              <div class="row">
-                <label>Name</label>
-                <input v-model="form.parentName" required />
+            <div class="row">
+              <label>Child's Parent / Guardian Situation</label>
+              <select v-model="form.familyContactType" required>
+                <option value="">Select situation</option>
+                <option value="Both Parents">Both parents</option>
+                <option value="Single Parent">Single parent</option>
+                <option value="Guardian">Guardian</option>
+              </select>
+            </div>
+
+            <div v-if="form.familyContactType === 'Both Parents' || form.familyContactType === 'Single Parent'" class="section-divider"></div>
+            <div v-if="form.familyContactType === 'Both Parents' || form.familyContactType === 'Single Parent'" class="caregiver-block">
+              <h4>Father's Details</h4>
+              <div class="row-group">
+                <div class="row">
+                  <label>Father's Name</label>
+                  <input v-model="form.fatherName" :required="form.familyContactType === 'Both Parents'" />
+                </div>
+                <div class="row">
+                  <label>Father's Mobile</label>
+                  <input type="tel" v-model="form.fatherMobile" :required="form.familyContactType === 'Both Parents'" />
+                </div>
               </div>
-              <div class="row">
-                <label>Relationship</label>
-                <select v-model="form.parentRelationship" required>
-                  <option value="">Select relationship</option>
-                  <option>Father</option>
-                  <option>Mother</option>
-                  <option>Guardian</option>
-                </select>
+              <div class="row-group">
+                <div class="row">
+                  <label>Father's Email Address</label>
+                  <input type="email" v-model="form.fatherEmail" :required="form.familyContactType === 'Both Parents'" />
+                </div>
+                <div class="row">
+                  <label>Father's Profession</label>
+                  <input v-model="form.fatherProfession" />
+                </div>
+              </div>
+              <div class="row-group">
+                <div class="row">
+                  <label>Father's Designation</label>
+                  <input v-model="form.fatherDesignation" />
+                </div>
+                <div class="row">
+                  <label>Father's Company</label>
+                  <input v-model="form.fatherCompany" />
+                </div>
+              </div>
+              <div class="row-group">
+                <div class="row">
+                  <label>Father's Town</label>
+                  <input v-model="form.fatherTown" />
+                </div>
+                <div class="row">
+                  <label>Father's Country</label>
+                  <input v-model="form.fatherCountry" />
+                </div>
               </div>
             </div>
-            <div class="row-group">
-              <div class="row">
-                <label>Profession</label>
-                <input v-model="form.profession" />
+
+            <div v-if="form.familyContactType === 'Both Parents' || form.familyContactType === 'Single Parent'" class="section-divider"></div>
+            <div v-if="form.familyContactType === 'Both Parents' || form.familyContactType === 'Single Parent'" class="caregiver-block">
+              <h4>Mother's Details</h4>
+              <div class="row-group">
+                <div class="row">
+                  <label>Mother's Name</label>
+                  <input v-model="form.motherName" :required="form.familyContactType === 'Both Parents'" />
+                </div>
+                <div class="row">
+                  <label>Mother's Mobile</label>
+                  <input type="tel" v-model="form.motherMobile" :required="form.familyContactType === 'Both Parents'" />
+                </div>
               </div>
-              <div class="row">
-                <label>Designation</label>
-                <input v-model="form.designation" />
+              <div class="row-group">
+                <div class="row">
+                  <label>Mother's Email Address</label>
+                  <input type="email" v-model="form.motherEmail" :required="form.familyContactType === 'Both Parents'" />
+                </div>
+                <div class="row">
+                  <label>Mother's Profession</label>
+                  <input v-model="form.motherProfession" />
+                </div>
+              </div>
+              <div class="row-group">
+                <div class="row">
+                  <label>Mother's Designation</label>
+                  <input v-model="form.motherDesignation" />
+                </div>
+                <div class="row">
+                  <label>Mother's Company</label>
+                  <input v-model="form.motherCompany" />
+                </div>
+              </div>
+              <div class="row-group">
+                <div class="row">
+                  <label>Mother's Town</label>
+                  <input v-model="form.motherTown" />
+                </div>
+                <div class="row">
+                  <label>Mother's Country</label>
+                  <input v-model="form.motherCountry" />
+                </div>
               </div>
             </div>
-            <div class="row-group">
-              <div class="row">
-                <label>Company</label>
-                <input v-model="form.company" />
+
+            <div v-if="form.familyContactType === 'Guardian'" class="section-divider"></div>
+            <div v-if="form.familyContactType === 'Guardian'" class="caregiver-block">
+              <h4>Guardian's Details</h4>
+              <div class="row-group">
+                <div class="row">
+                  <label>Guardian's Name</label>
+                  <input v-model="form.guardianName" required />
+                </div>
+                <div class="row">
+                  <label>Relationship to Child</label>
+                  <input v-model="form.guardianRelationship" required />
+                </div>
               </div>
-              <div class="row">
-                <label>Town</label>
-                <input v-model="form.town" />
+              <div class="row-group">
+                <div class="row">
+                  <label>Guardian's Mobile</label>
+                  <input type="tel" v-model="form.guardianMobile" required />
+                </div>
+                <div class="row">
+                  <label>Guardian's Email Address</label>
+                  <input type="email" v-model="form.guardianEmail" required />
+                </div>
+              </div>
+              <div class="row-group">
+                <div class="row">
+                  <label>Guardian's Profession</label>
+                  <input v-model="form.guardianProfession" />
+                </div>
+              </div>
+              <div class="row-group">
+                <div class="row">
+                  <label>Guardian's Designation</label>
+                  <input v-model="form.guardianDesignation" />
+                </div>
+                <div class="row">
+                  <label>Guardian's Company</label>
+                  <input v-model="form.guardianCompany" />
+                </div>
+              </div>
+              <div class="row-group">
+                <div class="row">
+                  <label>Guardian's Town</label>
+                  <input v-model="form.guardianTown" />
+                </div>
+                <div class="row">
+                  <label>Guardian's Country</label>
+                  <input v-model="form.guardianCountry" />
+                </div>
               </div>
             </div>
-            <div class="row-group">
+
+            <p v-if="familyContactError" class="field-error">{{ familyContactError }}</p>
+
+            <div class="section-divider"></div>
+            <h4>Parent / Guardian Signature</h4>
+            <div v-if="form.familyContactType === 'Both Parents' || form.familyContactType === 'Single Parent'" class="row-group">
               <div class="row">
-                <label>Country</label>
-                <input v-model="form.country" />
+                <label>Father's Signature</label>
+                <input v-model="form.fatherSignature" :required="form.familyContactType === 'Both Parents' || hasRequiredContact(getFatherContact())" placeholder="Type father's full name as signature" />
               </div>
               <div class="row">
-                <label>Mobile 1</label>
-                <input type="tel" v-model="form.mobile1" />
-              </div>
-            </div>
-            <div class="row-group">
-              <div class="row">
-                <label>Mobile 2</label>
-                <input type="tel" v-model="form.mobile2" />
-              </div>
-              <div class="row">
-                <label>Email Address</label>
-                <input type="email" v-model="form.email" />
+                <label>Mother's Signature</label>
+                <input v-model="form.motherSignature" :required="form.familyContactType === 'Both Parents' || hasRequiredContact(getMotherContact())" placeholder="Type mother's full name as signature" />
               </div>
             </div>
-            <div class="row-group">
+            <div v-if="form.familyContactType === 'Guardian'" class="row-group">
               <div class="row">
-                <label>Signature</label>
-                <input v-model="form.parentSignature" placeholder="Type full name as signature" />
+                <label>Guardian's Signature</label>
+                <input v-model="form.guardianSignature" required placeholder="Type guardian's full name as signature" />
               </div>
+              <div class="row">
+                <label>Date</label>
+                <input type="date" v-model="form.parentSignatureDate" readonly />
+              </div>
+            </div>
+            <div v-if="form.familyContactType === 'Both Parents' || form.familyContactType === 'Single Parent'" class="row-group signature-date-row">
               <div class="row">
                 <label>Date</label>
                 <input type="date" v-model="form.parentSignatureDate" readonly />
@@ -362,6 +478,35 @@ const form = reactive({
   gender: '',
   photoNotes: '',
   medicalInfo: '',
+  familyContactType: '',
+  fatherName: '',
+  fatherMobile: '',
+  fatherEmail: '',
+  fatherProfession: '',
+  fatherDesignation: '',
+  fatherCompany: '',
+  fatherTown: '',
+  fatherCountry: '',
+  fatherSignature: '',
+  motherName: '',
+  motherMobile: '',
+  motherEmail: '',
+  motherProfession: '',
+  motherDesignation: '',
+  motherCompany: '',
+  motherTown: '',
+  motherCountry: '',
+  motherSignature: '',
+  guardianName: '',
+  guardianRelationship: '',
+  guardianMobile: '',
+  guardianEmail: '',
+  guardianProfession: '',
+  guardianDesignation: '',
+  guardianCompany: '',
+  guardianTown: '',
+  guardianCountry: '',
+  guardianSignature: '',
   parentName: '',
   parentRelationship: '',
   profession: '',
@@ -397,6 +542,7 @@ const form = reactive({
   custodyIssueDetails: ''
 })
 const status = ref('')
+const familyContactError = ref('')
 const lastSubmitted = ref(null)
 const photoPreview = ref('')
 const photoInput = ref(null)
@@ -431,6 +577,160 @@ watch(
     }
   }
 )
+
+watch(
+  () => [
+    form.familyContactType,
+    form.fatherName,
+    form.fatherMobile,
+    form.fatherEmail,
+    form.fatherSignature,
+    form.motherName,
+    form.motherMobile,
+    form.motherEmail,
+    form.motherSignature,
+    form.guardianName,
+    form.guardianRelationship,
+    form.guardianMobile,
+    form.guardianEmail,
+    form.guardianSignature
+  ],
+  () => {
+    familyContactError.value = ''
+  }
+)
+
+const hasRequiredContact = (contact) => (
+  Boolean(contact.name.trim()) &&
+  Boolean(contact.mobile.trim()) &&
+  Boolean(contact.email.trim())
+)
+
+const getFatherContact = () => ({
+  name: form.fatherName,
+  mobile: form.fatherMobile,
+  email: form.fatherEmail,
+  profession: form.fatherProfession,
+  designation: form.fatherDesignation,
+  company: form.fatherCompany,
+  town: form.fatherTown,
+  country: form.fatherCountry,
+  relationship: 'Father'
+})
+
+const getMotherContact = () => ({
+  name: form.motherName,
+  mobile: form.motherMobile,
+  email: form.motherEmail,
+  profession: form.motherProfession,
+  designation: form.motherDesignation,
+  company: form.motherCompany,
+  town: form.motherTown,
+  country: form.motherCountry,
+  relationship: 'Mother'
+})
+
+const getGuardianContact = () => ({
+  name: form.guardianName,
+  mobile: form.guardianMobile,
+  email: form.guardianEmail,
+  profession: form.guardianProfession,
+  designation: form.guardianDesignation,
+  company: form.guardianCompany,
+  town: form.guardianTown,
+  country: form.guardianCountry,
+  relationship: form.guardianRelationship || 'Guardian'
+})
+
+function validateFamilyContact() {
+  if (!form.familyContactType) {
+    familyContactError.value = 'Please select whether the child has both parents, a single parent, or a guardian.'
+    return false
+  }
+
+  const father = getFatherContact()
+  const mother = getMotherContact()
+  const guardian = getGuardianContact()
+
+  if (form.familyContactType === 'Both Parents') {
+    if (!hasRequiredContact(father) || !hasRequiredContact(mother)) {
+      familyContactError.value = 'For both parents, fill the father and mother name, mobile, and email.'
+      return false
+    }
+    if (!form.fatherSignature.trim() || !form.motherSignature.trim()) {
+      familyContactError.value = 'For both parents, fill both the father and mother signatures.'
+      return false
+    }
+  }
+
+  if (form.familyContactType === 'Single Parent') {
+    if (!hasRequiredContact(father) && !hasRequiredContact(mother)) {
+      familyContactError.value = 'For a single parent, fill either the father or mother name, mobile, and email.'
+      return false
+    }
+    if (hasRequiredContact(father) && !form.fatherSignature.trim()) {
+      familyContactError.value = 'Please fill the father signature.'
+      return false
+    }
+    if (hasRequiredContact(mother) && !form.motherSignature.trim()) {
+      familyContactError.value = 'Please fill the mother signature.'
+      return false
+    }
+  }
+
+  if (form.familyContactType === 'Guardian') {
+    if (!hasRequiredContact(guardian) || !form.guardianRelationship.trim()) {
+      familyContactError.value = 'For a guardian, fill the guardian name, relationship, mobile, and email.'
+      return false
+    }
+    if (!form.guardianSignature.trim()) {
+      familyContactError.value = 'Please fill the guardian signature.'
+      return false
+    }
+  }
+
+  return true
+}
+
+function syncPrimaryContactFields() {
+  const father = getFatherContact()
+  const mother = getMotherContact()
+  const guardian = getGuardianContact()
+
+  if (form.familyContactType === 'Both Parents') {
+    form.parentName = `Father: ${father.name}; Mother: ${mother.name}`
+    form.parentRelationship = 'Both Parents'
+    form.mobile1 = father.mobile
+    form.mobile2 = mother.mobile
+    form.email = [father.email, mother.email].filter(Boolean).join(' / ')
+    form.profession = [father.profession, mother.profession].filter(Boolean).join(' / ')
+    form.designation = [father.designation, mother.designation].filter(Boolean).join(' / ')
+    form.company = [father.company, mother.company].filter(Boolean).join(' / ')
+    form.town = [father.town, mother.town].filter(Boolean).join(' / ')
+    form.country = [father.country, mother.country].filter(Boolean).join(' / ')
+    form.parentSignature = `Father: ${form.fatherSignature}; Mother: ${form.motherSignature}`
+    return
+  }
+
+  const primaryContact = form.familyContactType === 'Guardian'
+    ? guardian
+    : (hasRequiredContact(father) ? father : mother)
+  const primarySignature = form.familyContactType === 'Guardian'
+    ? form.guardianSignature
+    : (hasRequiredContact(father) ? form.fatherSignature : form.motherSignature)
+
+  form.parentName = primaryContact.name
+  form.parentRelationship = primaryContact.relationship
+  form.mobile1 = primaryContact.mobile
+  form.mobile2 = ''
+  form.email = primaryContact.email
+  form.profession = primaryContact.profession
+  form.designation = primaryContact.designation
+  form.company = primaryContact.company
+  form.town = primaryContact.town
+  form.country = primaryContact.country
+  form.parentSignature = primarySignature
+}
 
 function resetForm() {
   for (const key of Object.keys(form)) {
@@ -490,9 +790,9 @@ function removeEnrolledChild(index) {
   form.enrolledChildren.splice(index, 1)
 }
 
-async function downloadForm() {
-  if (!lastSubmitted.value) return
-  const payload = lastSubmitted.value
+async function downloadForm(options = {}) {
+  const payload = options.payload || lastSubmitted.value
+  if (!payload) return null
   const doc = new jsPDF({ unit: 'pt', format: 'a4' })
   const margin = 40
   const pageWidth = 595
@@ -622,6 +922,35 @@ async function downloadForm() {
   ])
 
   appendSection('3. Parent / Guardian Information', [
+    ['Parent / Guardian Situation', payload.familyContactType],
+    ['Father Name', payload.fatherName],
+    ['Father Mobile', payload.fatherMobile],
+    ['Father Email', payload.fatherEmail],
+    ['Father Profession', payload.fatherProfession],
+    ['Father Designation', payload.fatherDesignation],
+    ['Father Company', payload.fatherCompany],
+    ['Father Town', payload.fatherTown],
+    ['Father Country', payload.fatherCountry],
+    ['Father Signature', payload.fatherSignature],
+    ['Mother Name', payload.motherName],
+    ['Mother Mobile', payload.motherMobile],
+    ['Mother Email', payload.motherEmail],
+    ['Mother Profession', payload.motherProfession],
+    ['Mother Designation', payload.motherDesignation],
+    ['Mother Company', payload.motherCompany],
+    ['Mother Town', payload.motherTown],
+    ['Mother Country', payload.motherCountry],
+    ['Mother Signature', payload.motherSignature],
+    ['Guardian Name', payload.guardianName],
+    ['Guardian Relationship', payload.guardianRelationship],
+    ['Guardian Mobile', payload.guardianMobile],
+    ['Guardian Email', payload.guardianEmail],
+    ['Guardian Profession', payload.guardianProfession],
+    ['Guardian Designation', payload.guardianDesignation],
+    ['Guardian Company', payload.guardianCompany],
+    ['Guardian Town', payload.guardianTown],
+    ['Guardian Country', payload.guardianCountry],
+    ['Guardian Signature', payload.guardianSignature],
     ['Name', payload.parentName],
     ['Relationship', payload.parentRelationship],
     ['Profession', payload.profession],
@@ -702,10 +1031,40 @@ async function downloadForm() {
   })
 
   const fileName = `application-${payload.schoolType.toLowerCase()}-${payload.firstName.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'form'}-${payload.surname.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'student'}.pdf`
-  doc.save(fileName)
+  let uploadResult = null
+
+  if (options.upload) {
+    const dataUri = doc.output('datauristring')
+    const base64Data = dataUri.split(',')[1]
+    uploadResult = await uploadPdfToDrive(fileName, base64Data, 'application/pdf', payload.schoolType)
+  }
+
+  if (options.save !== false) {
+    doc.save(fileName)
+  }
+
+  return { fileName, uploadResult }
+}
+
+async function uploadPdfToDrive(fileName, base64Data, mimeType, schoolType) {
+  try {
+    const response = await fetch('/api/drive-upload', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fileName, fileData: base64Data, mimeType, schoolType })
+    })
+    return await response.json()
+  } catch (error) {
+    return { success: false, message: error?.message || 'Upload request failed.' }
+  }
 }
 
 async function submit(){
+  if (!validateFamilyContact()) {
+    status.value = familyContactError.value
+    return
+  }
+  syncPrimaryContactFields()
   status.value = 'Submitting...'
   try{
     const res = await fetch('/api/submit', {
@@ -721,6 +1080,13 @@ async function submit(){
         ...JSON.parse(JSON.stringify(form)),
         photoPreview: photoPreview.value
       }
+      status.value = 'Uploading application PDF to Google Drive...'
+      const pdfResult = await downloadForm({ payload, save: false, upload: true })
+      if (!pdfResult?.uploadResult?.success) {
+        status.value = `Google Drive upload failed: ${pdfResult?.uploadResult?.message || 'Unknown upload error.'}`
+        return
+      }
+      payload.driveUpload = pdfResult.uploadResult
       localStorage.setItem('submittedApplicationData', JSON.stringify(payload))
       status.value = 'Application submitted successfully. Redirecting to confirmation page...'
       resetForm()
@@ -766,6 +1132,9 @@ async function submit(){
 .photo-preview-card img{width:100%;height:auto;border-radius:14px;object-fit:cover}
 .photo-preview-card p{margin:0;color:#5e4b35;font-size:.95rem}
 .section-divider{height:1px;background:rgba(97,55,12,.12);border:none;margin:24px 0}
+.caregiver-block{display:flex;flex-direction:column;gap:16px}
+.field-error{margin:14px 0 0;color:#a72912;font-weight:700;line-height:1.5}
+.form-shell.junior-theme .field-error{color:#9b183b}
 .dynamic-row{padding:16px 0;border-bottom:1px solid rgba(97,55,12,.1)}
 .add-btn,.remove-btn{padding:12px 16px;border-radius:16px;border:none;background:#ffbc6a;color:#2b1f0f;font-weight:700;cursor:pointer;transition:background .2s ease}
 .add-btn:hover,.remove-btn:hover{background:#ff9b23}
