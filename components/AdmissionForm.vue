@@ -1031,32 +1031,12 @@ async function downloadForm(options = {}) {
   })
 
   const fileName = `application-${payload.schoolType.toLowerCase()}-${payload.firstName.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'form'}-${payload.surname.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'student'}.pdf`
-  let uploadResult = null
-
-  if (options.upload) {
-    const dataUri = doc.output('datauristring')
-    const base64Data = dataUri.split(',')[1]
-    uploadResult = await uploadPdfToDrive(fileName, base64Data, 'application/pdf', payload.schoolType)
-  }
 
   if (options.save !== false) {
     doc.save(fileName)
   }
 
-  return { fileName, uploadResult }
-}
-
-async function uploadPdfToDrive(fileName, base64Data, mimeType, schoolType) {
-  try {
-    const response = await fetch('/api/drive-upload', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fileName, fileData: base64Data, mimeType, schoolType })
-    })
-    return await response.json()
-  } catch (error) {
-    return { success: false, message: error?.message || 'Upload request failed.' }
-  }
+  return { fileName }
 }
 
 async function submit(){
@@ -1080,13 +1060,6 @@ async function submit(){
         ...JSON.parse(JSON.stringify(form)),
         photoPreview: photoPreview.value
       }
-      status.value = 'Uploading application PDF to Google Drive...'
-      const pdfResult = await downloadForm({ payload, save: false, upload: true })
-      if (!pdfResult?.uploadResult?.success) {
-        status.value = `Google Drive upload failed: ${pdfResult?.uploadResult?.message || 'Unknown upload error.'}`
-        return
-      }
-      payload.driveUpload = pdfResult.uploadResult
       localStorage.setItem('submittedApplicationData', JSON.stringify(payload))
       status.value = 'Application submitted successfully. Redirecting to confirmation page...'
       resetForm()

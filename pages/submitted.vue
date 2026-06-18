@@ -13,7 +13,6 @@
         <NuxtLink to="/" class="home-btn">Back to Home</NuxtLink>
       </div>
 
-      <p v-if="uploadMessage" class="notice">{{ uploadMessage }}</p>
       <p v-if="!application" class="notice error">
         No submission data is available. Please return to the form and submit again.
       </p>
@@ -31,7 +30,6 @@ import { jsPDF } from 'jspdf'
 
 const application = ref(null)
 const loading = ref(false)
-const uploadMessage = ref('')
 
 onMounted(() => {
   const stored = localStorage.getItem('submittedApplicationData')
@@ -50,7 +48,6 @@ function getApplicationFilename(payload) {
 async function downloadDesignedRegistrationDocument() {
   if (!application.value) return
   loading.value = true
-  uploadMessage.value = ''
 
   try {
     const payload = application.value
@@ -217,7 +214,7 @@ async function downloadDesignedRegistrationDocument() {
     }
 
     function drawOfficeUse() {
-      ensureSpace(150)
+      ensureSpace(112)
       doc.setDrawColor(120, 120, 120)
       doc.setLineDashPattern([2, 3], 0)
       doc.line(margin, cursorY, margin + contentWidth, cursorY)
@@ -229,15 +226,10 @@ async function downloadDesignedRegistrationDocument() {
       cursorY += 24
       drawFieldRow([
         { label: 'Application Received on', value: '', x: margin, width: 220, leaveBlank: true },
-        { label: 'Reference No.', value: '', x: margin + 250, width: contentWidth - 250, leaveBlank: true }
+        { label: 'Reference Number', value: '', x: margin + 250, width: contentWidth - 250, leaveBlank: true }
       ])
       drawFieldRow([
-        { label: 'Admission No.', value: '', x: margin, width: 220, leaveBlank: true },
-        { label: 'Class / Grade', value: '', x: margin + 250, width: contentWidth - 250, leaveBlank: true }
-      ])
-      drawFieldRow([
-        { label: 'Assessment Date', value: '', x: margin, width: 220, leaveBlank: true },
-        { label: 'Approved By', value: '', x: margin + 250, width: contentWidth - 250, leaveBlank: true }
+        { label: 'Admission Number', value: '', x: margin, width: contentWidth, leaveBlank: true }
       ])
     }
 
@@ -404,20 +396,6 @@ async function downloadDesignedRegistrationDocument() {
     drawOfficeUse()
 
     const fileName = getApplicationFilename(payload)
-    const dataUri = doc.output('datauristring')
-    const base64Data = dataUri.split(',')[1]
-    const driveResponse = payload.driveUpload?.success
-      ? payload.driveUpload
-      : await uploadPdfToDrive(fileName, base64Data, 'application/pdf')
-
-    if (driveResponse.success) {
-      uploadMessage.value = payload.driveUpload?.success
-        ? 'Already saved to Google Drive successfully.'
-        : 'Saved to Google Drive successfully.'
-    } else {
-      uploadMessage.value = `Google Drive upload failed: ${driveResponse.message}`
-    }
-
     doc.save(fileName)
   } finally {
     loading.value = false
@@ -436,7 +414,6 @@ async function downloadDocument() {
   const margin = 40
   let cursorY = 50
 
-  uploadMessage.value = ''
   doc.setFontSize(16)
   doc.text('School Admission Application', margin, cursorY)
   cursorY += 28
@@ -625,31 +602,8 @@ async function downloadDocument() {
   })
 
   const fileName = getApplicationFilename(payload)
-  const dataUri = doc.output('datauristring')
-  const base64Data = dataUri.split(',')[1]
-  const driveResponse = await uploadPdfToDrive(fileName, base64Data, 'application/pdf')
-
-  if (driveResponse.success) {
-    uploadMessage.value = 'Saved to Google Drive successfully.'
-  } else {
-    uploadMessage.value = `Google Drive upload failed: ${driveResponse.message}`
-  }
-
   doc.save(fileName)
   loading.value = false
-}
-
-async function uploadPdfToDrive(fileName, base64Data, mimeType) {
-  try {
-    const response = await fetch('/api/drive-upload', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fileName, fileData: base64Data, mimeType, schoolType: application.value?.schoolType })
-    })
-    return await response.json()
-  } catch (error) {
-    return { success: false, message: error?.message || 'Upload request failed.' }
-  }
 }
 </script>
 

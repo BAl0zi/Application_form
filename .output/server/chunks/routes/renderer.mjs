@@ -1,4 +1,4 @@
-import { createRenderer, getRequestDependencies, getPreloadLinks, getPrefetchLinks } from 'vue-bundle-renderer/runtime';
+globalThis.__timing__.logStart('Load chunks/routes//renderer');import { createRenderer, getRequestDependencies, getPreloadLinks, getPrefetchLinks } from 'vue-bundle-renderer/runtime';
 import { j as joinRelativeURL, m as useRuntimeConfig, h as getResponseStatusText, f as getResponseStatus, e as encodePath, a as defineRenderHandler, g as getQuery, c as createError, i as getRouteRules, k as joinURL, u as useNitroApp } from '../_/nitro.mjs';
 import { createHead as createHead$1, propsToString, renderSSRHead } from 'unhead/server';
 import { stringify, uneval } from 'devalue';
@@ -42,7 +42,7 @@ function createHead(options = {}) {
 
 const NUXT_RUNTIME_PAYLOAD_EXTRACTION = false;
 
-const appHead = {"meta":[{"name":"viewport","content":"width=device-width, initial-scale=1"},{"charset":"utf-8"}],"link":[],"style":[],"script":[],"noscript":[],"title":"School Application Form"};
+const appHead = {"meta":[{"charset":"utf-8"},{"name":"viewport","content":"width=device-width, initial-scale=1, maximum-scale=1"}],"link":[],"style":[],"script":[],"noscript":[],"title":"School Application Form"};
 
 const appRootTag = "div";
 
@@ -419,5 +419,5 @@ function renderHTMLDocument(html) {
 	return "<!DOCTYPE html>" + `<html${joinAttrs(html.htmlAttrs)}>` + `<head>${joinTags(html.head)}</head>` + `<body${joinAttrs(html.bodyAttrs)}>${joinTags(html.bodyPrepend)}${joinTags(html.body)}${joinTags(html.bodyAppend)}</body>` + "</html>";
 }
 
-export { handler as default };
+export { handler as default };;globalThis.__timing__.logEnd('Load chunks/routes//renderer');
 //# sourceMappingURL=renderer.mjs.map

@@ -1,4 +1,4 @@
-import { d as defineEventHandler, r as readBody } from '../../_/nitro.mjs';
+globalThis.__timing__.logStart('Load chunks/routes/api/submit.post');import { d as defineEventHandler, r as readBody } from '../../_/nitro.mjs';
 import 'node:http';
 import 'node:https';
 import 'node:events';
@@ -14,5 +14,5 @@ const submit_post = defineEventHandler(async (event) => {
   return { success: true };
 });
 
-export { submit_post as default };
+export { submit_post as default };;globalThis.__timing__.logEnd('Load chunks/routes/api/submit.post');
 //# sourceMappingURL=submit.post.mjs.map
